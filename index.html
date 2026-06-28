@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌿 韬韬学习打卡表 · 龙虾助手版</title>
+<style>
+:root {
+  --green-dark: #2D5A27;
+  --green-mid: #4A8C3F;
+  --green-light: #A8D5A2;
+  --green-pale: #D4E8D0;
+  --bg: #E8F3E0;
+  --bg2: #DCE8D5;
+  --text: #3A4A38;
+  --text-light: #7A8A77;
+  --gold: #D4A843;
+  --blue: #5B9BD5;
+  --red: #E05555;
+  --radius: 12px;
+  --card-purple: #7B4FBF;
+  --card-blue: #4A90D9;
+  --card-orange: #E8833A;
+  --card-pink: #E86B9B;
+  --card-gold: #D4A843;
+  --card-teal: #3BA99C;
+  --card-red: #E05555;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  background: linear-gradient(180deg, #C8E8FF 0%, #D8F0C0 40%, #E8F8D0 70%, #F0FCD8 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 12px 14px 90px;
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* 花草树SVG背景层 */
+#nature-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+#nature-bg svg {
+  width: 100%; height: 100%;
+  position: absolute; top: 0; left: 0;
+}
+
+/* 小溪流动动画 */
+@keyframes streamFlow {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-40px); }
+}
+.stream-anim { animation: streamFlow 3s linear infinite; }
+
+body > * { position: relative; z-index: 1; }
+
+/* Header */
+.header { text-align: center; padding: 10px 0 6px; }
+.header h1 { font-size: 1.5rem; color: var(--green-dark); margin-bottom: 2px; text-shadow: 1px 1px 0 rgba(255,255,255,0.5); }
+.header .subtitle { font-size: 0.8rem; color: var(--text-light); }
+
+/* Points Bar */
+.points-bar {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 10px 12px; margin: 10px 0;
+}
+.points-item { text-align: center; }
+.points-value { font-size: 1.25rem; font-weight: 900; color: var(--green-dark); display: flex; align-items: center; gap: 3px; justify-content: center; }
+.points-label { font-size: 0.68rem; color: var(--text-light); }
+.points-divider { width: 1px; height: 28px; background: #B8CCA8; }
+
+.draw-chip {
+  background: linear-gradient(135deg, #E8A840, #D4942A);
+  color: white; padding: 5px 14px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: bold; cursor: pointer;
+  animation: chipGlow 2s infinite; transition: transform 0.2s;
+  white-space: nowrap; border: none;
+  box-shadow: 0 2px 10px rgba(212,148,42,0.35);
+}
+.draw-chip:active { transform: scale(0.9); }
+@keyframes chipGlow {
+  0%,100% { box-shadow: 0 0 8px rgba(212,148,42,0.3); }
+  50% { box-shadow: 0 0 18px rgba(212,148,42,0.7); }
+}
+
+/* Date Nav */
+.date-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 0; }
+.date-nav button { background: var(--green-pale); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1rem; cursor: pointer; color: var(--green-dark); transition: transform 0.15s; display: flex; align-items: center; justify-content: center; }
+.date-nav button:active { transform: scale(0.9); }
+.date-nav .today-btn { border-radius: 20px; width: auto; padding: 0 14px; font-size: 0.85rem; font-weight: bold; }
+.date-display { font-size: 0.95rem; font-weight: bold; color: var(--green-dark); min-width: 130px; text-align: center; }
+
+/* Tab Bar */
+.tab-bar { display: flex; gap: 8px; margin: 14px auto; justify-content: center; flex-wrap: nowrap; padding: 0 16px; max-width: 370px; }
+
+.tab {
+  padding: 10px 8px; border-radius: 14px; border: 2px solid rgba(74,140,63,0.25);
+  background: rgba(205,235,195,0.55); color: var(--text);
+  font-size: 0.76rem; font-weight: 600; cursor: pointer;
+  transition: all 0.25s; text-align: center;
+  flex: 1 1 auto; min-width: 0; max-width: none;
+  box-shadow: 0 2px 6px rgba(74,140,63,0.06);
+  white-space: nowrap;
+}
+.tab:hover { background: rgba(180,220,165,0.8); border-color: rgba(74,140,63,0.4); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(74,140,63,0.12); }
+.tab.active {
+  background: linear-gradient(135deg, #6DB860, #4A8C3F); color: #fff;
+  border-color: #3A7030; box-shadow: 0 4px 16px rgba(74,140,63,0.25);
+  transform: translateY(-2px);
+}
+.tab-content { display: none; }
+.tab-content.active {
+  display: block;
+  max-width: 370px;
+  margin: 0 auto;
+  padding: 18px 16px;
+  background: rgba(205, 235, 195, 0.55);
+  border: 2px solid rgba(110, 170, 90, 0.4);
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(74,140,63,0.1);
+}
+
+/* 重置按钮（在框框外面下面） */
+.reset-btn-wrapper {
+  display: none;
+  max-width: 370px;
+  margin: 10px auto 0;
+  text-align: center;
+}
+.reset-btn-wrapper.active { display: block; }
+.reset-btn {
+  padding: 10px 28px;
+  border-radius: 18px;
+  border: 2px solid #E05555;
+  background: rgba(255, 240, 240, 0.85);
+  color: #E05555;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 2px 8px rgba(224,85,85,0.15);
+}
+.reset-btn:hover {
+  background: #E05555;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(224,85,85,0.35);
+  transform: translateY(-1px);
+}
+.reset-btn:active { transform: scale(0.94); }
+
+
+/* 落叶容器 */
+.leaves-area {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: visible;
+}
+/* 叶片 */
+.falling-leaf {
+  position: absolute; top: -30px; left: 0;
+  font-size: 1.1rem;
+  animation: leafFall linear infinite;
+  opacity: 0; pointer-events: none;
+}
+@keyframes leafFall {
+  0%   { top: -30px;  transform: rotate(0deg);   opacity: 0; }
+  5%   { top: 5%;     transform: rotate(30deg);  opacity: 0.4; }
+  25%  { top: 25%;    transform: rotate(100deg); opacity: 0.45; }
+  50%  { top: 50%;    transform: rotate(200deg); opacity: 0.42; }
+  75%  { top: 75%;    transform: rotate(300deg); opacity: 0.38; }
+  90%  { top: 92%;    transform: rotate(340deg); opacity: 0.25; }
+  100% { top: 102%;   transform: rotate(360deg); opacity: 0; }
+}
+/* Section header */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 4px 2px; }
+.section-title { font-size: 0.95rem; font-weight: bold; color: var(--green-dark); display: flex; align-items: center; gap: 6px; }
+.section-actions { display: flex; gap: 6px; }
+.section-actions button { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--green-light); background: transparent; font-size: 1rem; cursor: pointer; color: var(--green-dark); display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-weight: bold; line-height: 1; }
+.section-actions button:hover { background: var(--green-pale); }
+
+/* Daily Tasks */
+.task-item { display: flex; align-items: center; padding: 11px 4px; border-bottom: 1px solid rgba(74,140,63,0.12); cursor: pointer; user-select: none; position: relative; transition: background 0.2s; border-radius: 10px; }
+.task-item:active { background: rgba(168,213,162,0.2); }
+.task-item:last-child { border-bottom: none; }
+.task-item .emoji { font-size: 1.3rem; margin-right: 10px; flex-shrink: 0; }
+.task-item .label { flex: 1; font-size: 0.88rem; transition: color 0.3s; line-height: 1.4; }
+.task-item.done .label { color: #aab; text-decoration: line-through; }
+.task-item .check { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; margin-left: 6px; transition: all 0.3s; position: relative; z-index: 2; }
+.task-item .check .pts { position: absolute; top: -18px; font-size: 0.65rem; font-weight: bold; color: var(--green-mid); opacity: 0; transition: all 0.5s; white-space: nowrap; }
+.task-item.task-done-anim .check .pts { opacity: 1; top: -24px; }
+.task-item.done .check { background: var(--green-mid); color: white; }
+.task-item:not(.done) .check { background: rgba(0,0,0,0.04); border: 2px solid #ccc; }
+.task-item .task-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: transparent; color: #bbb; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 2px; margin-right: 2px; opacity: 0; transition: all 0.2s; flex-shrink: 0; }
+.task-item:hover .task-del { opacity: 1; color: var(--red); }
+.task-item .task-del:active { transform: scale(1.2); }
+
+/* Weekly Tasks */
+.weekly-item { margin-bottom: 16px; position: relative; }
+.weekly-item .wlabel { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 5px; color: var(--text); }
+.weekly-item .wlabel span:last-child { font-weight: bold; color: var(--green-dark); font-size: 0.9rem; }
+.wlabel .wlabel-done { color: var(--green-mid) !important; }
+.progress-bg { height: 14px; border-radius: 7px; background: rgba(0,0,0,0.06); overflow: hidden; position: relative; }
+.progress-fill { height: 100%; border-radius: 7px; transition: width 0.5s ease; }
+.progress-fill.done { background: linear-gradient(90deg, #7CB868, var(--green-mid)); }
+.progress-fill.in-progress { background: linear-gradient(90deg, #E8C840, var(--gold)); }
+.progress-fill.empty { background: #ddd; }
+.pct-label { text-align: center; margin-top: 3px; font-size: 0.75rem; color: var(--text-light); }
+.weekly-btns { display: flex; gap: 8px; margin-top: 6px; }
+.weekly-btns button { flex: 1; padding: 7px 8px; border: none; border-radius: 12px; font-size: 0.82rem; cursor: pointer; background: var(--green-pale); color: var(--green-dark); font-weight: bold; transition: all 0.15s; }
+.weekly-btns button:active { background: var(--green-mid); color: white; }
+.weekly-del { float: right; background: none; border: none; color: #bbb; font-size: 0.85rem; cursor: pointer; padding: 2px 6px; transition: color 0.2s; }
+.weekly-del:hover { color: var(--red); }
+
+/* PK Schedule */
+.pk-day { margin-bottom: 14px; padding: 12px; background: rgba(168,213,162,0.12); border-radius: 14px; border-left: 4px solid var(--green-light); position: relative; }
+.pk-day.today { border-left-color: var(--green-mid); background: rgba(168,213,162,0.22); }
+.pk-day-header { font-size: 0.9rem; font-weight: bold; color: var(--green-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.pk-day-header .today-badge { font-size: 0.65rem; background: var(--green-mid); color: white; padding: 2px 8px; border-radius: 8px; }
+.pk-event { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.85rem; color: var(--text); }
+.pk-event .pk-time { font-weight: bold; color: var(--green-dark); min-width: 48px; font-size: 0.82rem; }
+.pk-event .pk-icon { font-size: 1.2rem; }
+.pk-event .pk-subject { flex: 1; }
+.pk-check-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ccc; background: transparent; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #aaa; }
+.pk-check-btn.done { background: var(--green-mid); color: white; border-color: var(--green-mid); }
+
+/* ================================================================
+   权益卡 Tab — 小天才风格完整系统
+   ================================================================ */
+
+/* Sub-navigation within 权益卡 */
+.quanyi-subnav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+  padding: 4px 0;
+}
+.quanyi-subnav::-webkit-scrollbar { display: none; }
+.quanyi-subtab {
+  flex-shrink: 0; padding: 8px 16px; border: none; border-radius: 20px;
+  font-size: 0.8rem; cursor: pointer; font-weight: bold; white-space: nowrap;
+  background: rgba(255,255,255,0.5); color: var(--text);
+  transition: all 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.quanyi-subtab.active {
+  background: linear-gradient(135deg, #7B4FBF, #5E35B1);
+  color: white; box-shadow: 0 3px 12px rgba(123,79,191,0.35);
+}
+.quanyi-page { display: none; }
+.quanyi-page.active { display: block; }
+
+/* ===== Card Pool (小天才风格) ===== */
+.card-pool-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin: 16px 0;
+}
+.privilege-card {
+  border-radius: 18px; padding: 14px 12px; text-align: center;
+  color: white; position: relative; overflow: hidden;
+  cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-height: 130px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.privilege-card:active { transform: scale(0.94); }
+.privilege-card .card-stars {
+  font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 2px;
+}
+.privilege-card .card-icon { font-size: 2.5rem; margin: 4px 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+.privilege-card .card-title { font-size: 0.9rem; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.privilege-card .card-subtitle { font-size: 0.7rem; opacity: 0.85; line-height: 1.3; }
+.privilege-card .card-shine {
+  position: absolute; top: -30%; left: -30%; width: 60%; height: 160%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+  transform: rotate(25deg); pointer-events: none;
+}
+.privilege-card.owned { opacity: 0.7; }
+.privilege-card.owned::after {
+  content: '已拥有'; position: absolute; top: 8px; right: 8px;
+  background: rgba(255,255,255,0.3); padding: 2px 8px;
+  border-radius: 10px; font-size: 0.65rem; font-weight: bold;
+}
+.privilege-card.locked { opacity: 0.55; filter: grayscale(0.6); }
+.privilege-card.locked::after {
+  content: '🔒'; position: absolute; top: 8px; right: 8px; font-size: 1rem;
+}
+
+/* Card gradient themes — PIN风格三档 */
+/* SSR 红色系 — 传说 */
+.card-g-ssr {
+  background: linear-gradient(145deg, #FF1744, #D50000, #B71C1C);
+  box-shadow: 0 6px 24px rgba(229,57,53,0.55);
+}
+/* SR 蓝色系 — 稀有 */
+.card-g-sr {
+  background: linear-gradient(145deg, #2979FF, #1565C0, #0D47A1);
+  box-shadow: 0 6px 18px rgba(41,121,255,0.45);
+}
+/* R 肉色系 — 普通 */
+.card-g-r {
+  background: linear-gradient(145deg, #FFAB91, #FF8A65, #E64A19);
+  box-shadow: 0 4px 12px rgba(255,138,101,0.35);
+}
+/* 兼容旧CSS — 保留以防旧代码调用 */
+.card-g-purple { background: linear-gradient(135deg, #9C27B0, #7B1FA2, #4A148C); }
+.card-g-blue { background: linear-gradient(135deg, #42A5F5, #1E88E5, #1565C0); }
+  .card-g-orange { background: linear-gradient(135deg, #FF9800, #F57C00, #E65100); }
+  .card-g-limited {
+    background: linear-gradient(145deg, #FFD700, #FFA500, #FF8C00);
+    box-shadow: 0 6px 24px rgba(255,165,0,0.55);
+  }
+  .card-energy-prairie { font-size: 0.68rem; opacity: 0.85; margin-top: 2px; }.card-g-pink { background: linear-gradient(135deg, #EC407A, #D81B60, #AD1457); }
+.card-g-gold { background: linear-gradient(135deg, #FFD54F, #FFB300, #FF8F00); color: #5D4037 !important; }
+.card-g-gold .card-title, .card-g-gold .card-subtitle { text-shadow: none; }
+.card-g-teal { background: linear-gradient(135deg, #26A69A, #00897B, #00695C); }
+.card-g-red { background: linear-gradient(135deg, #EF5350, #E53935, #C62828); }
+.card-g-indigo { background: linear-gradient(135deg, #5C6BC0, #3949AB, #283593); }
+.card-g-green { background: linear-gradient(135deg, #66BB6A, #43A047, #2E7D32); }
+.card-g-deepblue { background: linear-gradient(135deg, #29B6F6, #0288D1, #01579B); }
+.card-g-rose { background: linear-gradient(135deg, #F06292, #E91E63, #880E4F); }
+.card-g-amber { background: linear-gradient(135deg, #FFB300, #FF8F00, #FF6F00); }
+
+/* PIN风格稀有度光效 */
+.card-g-ssr::before {
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(from 0deg,transparent,rgba(255,255,255,0.15),transparent,transparent);
+  animation:cardRotate 4s linear infinite;
+}
+@keyframes cardRotate{ to{transform:rotate(360deg);} }
+.card-g-sr::before {
+  content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  animation:cardShimmer 2.5s ease-in-out infinite;
+}
+@keyframes cardShimmer{ 0%{left:-60%}100%{left:120%} }
+
+/* ===== Draw Card Stage (6张牌网格) ===== */
+.draw-stage-area {
+  padding: 10px 0;
+}
+.draw-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.draw-card-cell {
+  perspective: 600px;
+  aspect-ratio: 5/7;
+  position: relative;
+}
+.draw-card {
+  width: 100%; height: 100%; position: relative;
+  transform-style: preserve-3d; transition: transform 0.7s ease;
+  cursor: pointer;
+}
+.draw-card.flipped { transform: rotateY(180deg); }
+.draw-card-face {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; border-radius: 14px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 8px 6px; text-align: center; color: white;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.draw-card-front {
+  background: linear-gradient(135deg, #FFB300, #FF6F00, #E65100);
+}
+.draw-card-front .draw-icon { font-size: 1.8rem; margin-bottom: 4px; }
+.draw-card-front .draw-text { font-size: 0.72rem; font-weight: bold; }
+.draw-card-front .draw-sub { font-size: 0.58rem; opacity: 0.8; margin-top: 3px; }
+.draw-card-back {
+  transform: rotateY(180deg);
+}
+.draw-card-back .card-stars-back { font-size: 0.6rem; letter-spacing: 1px; margin-bottom: 2px; }
+.draw-card-back .card-emoji { font-size: 1.8rem; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+.draw-card-back .card-name { font-size: 0.72rem; font-weight: bold; margin-bottom: 2px; }
+.draw-card-back .card-rarity-tag {
+  font-size: 0.55rem; padding: 1px 8px; border-radius: 8px;
+  background: rgba(255,255,255,0.3); margin-bottom: 3px;
+}
+.draw-card-back .card-desc { font-size: 0.58rem; opacity: 0.85; }
+.draw-card-back .card-energy-prairie { font-size: 0.55rem; margin-top: 3px; }
+
+/* 翻牌动画中禁用点击 */
+.draw-card.flipping { pointer-events: none; }
+
+.draw-info-box {
+  margin-top: 16px; padding: 14px;
+  background: rgba(168,213,162,0.12); border-radius: 14px;
+  text-align: center;
+}
+.draw-info-title { font-size: 0.85rem; font-weight: bold; color: var(--green-dark); margin-bottom: 8px; }
+.draw-info-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.82rem; color: var(--text); margin-bottom: 6px; }
+.draw-info-row button {
+  padding: 6px 16px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, #7B4FBF, #5E35B1);
+  color: white; font-size: 0.82rem; cursor: pointer; font-weight: bold;
+  transition: all 0.15s;
+}
+.draw-info-row button:active { transform: scale(0.95); }
+.draw-info-row button:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ===== 许愿星球 - 三星球系统 ===== */
+.planet-cards { display: flex; flex-direction: column; gap: 14px; }
+
+.planet-card {
+  border-radius: 20px; padding: 18px 16px;
+  position: relative; overflow: hidden; color: white;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.planet-card:active { transform: scale(0.98); }
+.planet-card.planet-r  { background: linear-gradient(135deg, #5D3A1A 0%, #8B5E3C 40%, #A0724E 100%); border: 2px solid rgba(255,171,128,0.4); }
+.planet-card.planet-sr { background: linear-gradient(135deg, #0D2B4A 0%, #1A3A6A 40%, #224488 100%); border: 2px solid rgba(100,160,255,0.4); }
+.planet-card.planet-ssr{ background: linear-gradient(135deg, #3A0D0D 0%, #6A1A1A 40%, #882222 100%); border: 2px solid rgba(255,100,100,0.5); }
+
+.planet-card .pc-stars {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 0; opacity: 0.15;
+}
+.planet-card.planet-r  .pc-stars {
+  background: radial-gradient(1px 1px at 20% 30%, #FFD700, transparent),
+              radial-gradient(1px 1px at 60% 20%, #FFD700, transparent),
+              radial-gradient(1px 1px at 40% 70%, #FFD700, transparent),
+              radial-gradient(1px 1px at 80% 50%, #FFD700, transparent),
+              radial-gradient(1px 1px at 10% 80%, #FFD700, transparent);
+}
+.planet-card.planet-sr .pc-stars {
+  background: radial-gradient(1.5px 1.5px at 25% 25%, #FFF, transparent),
+              radial-gradient(1px 1px at 55% 35%, #FFF, transparent),
+              radial-gradient(1.5px 1.5px at 35% 65%, #FFF, transparent),
+              radial-gradient(1px 1px at 75% 45%, #FFF, transparent),
+              radial-gradient(1.5px 1.5px at 15% 55%, #FFF, transparent),
+              radial-gradient(1px 1px at 85% 75%, #FFF, transparent);
+}
+.planet-card.planet-ssr .pc-stars {
+  background: radial-gradient(2px 2px at 30% 20%, #FFD700, transparent),
+              radial-gradient(1.5px 1.5px at 60% 30%, #FFD700, transparent),
+              radial-gradient(2px 2px at 20% 55%, #FFD700, transparent),
+              radial-gradient(1.5px 1.5px at 70% 60%, #FFD700, transparent),
+              radial-gradient(2px 2px at 40% 75%, #FFD700, transparent),
+              radial-gradient(1.5px 1.5px at 80% 15%, #FFD700, transparent),
+              radial-gradient(2px 2px at 50% 45%, #FFD700, transparent);
+}
+
+.planet-card > * { position: relative; z-index: 1; }
+
+.pc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pc-icon { font-size: 2.5rem; flex-shrink: 0; }
+.planet-r  .pc-icon { filter: drop-shadow(0 0 8px rgba(255,171,128,0.6)); }
+.planet-sr .pc-icon { filter: drop-shadow(0 0 8px rgba(100,160,255,0.6)); }
+.planet-ssr .pc-icon { filter: drop-shadow(0 0 10px rgba(255,100,100,0.7)); }
+
+.pc-title { font-size: 1.05rem; font-weight: bold; }
+.planet-r  .pc-title { color: #FFCC80; }
+.planet-sr .pc-title { color: #90CAF9; }
+.planet-ssr .pc-title { color: #FFCDD2; }
+
+.pc-subtitle { font-size: 0.7rem; opacity: 0.6; }
+.pc-cost { font-size: 0.78rem; color: #FFE082; margin-bottom: 10px; }
+.planet-sr .pc-cost { color: #90CAF9; }
+.planet-ssr .pc-cost { color: #FF8A80; }
+
+.wish-planet-select { display: flex; flex-direction: column; gap: 14px; }
+.pc-btn-review {
+  margin-top: 6px; font-size: 0.82rem; color: #FFE082;
+  font-weight: bold; letter-spacing: 1px;
+}
+.planet-card { cursor: pointer; }
+
+/* 返回按钮 */
+.wish-back-btn {
+  display: block; margin: 0 auto 16px; background: rgba(255,255,255,0.5);
+  border: none; border-radius: 20px; padding: 8px 20px; font-size: 0.85rem;
+  font-weight: bold; color: var(--green-dark); cursor: pointer;
+  transition: background 0.2s;
+}
+.wish-back-btn:active { background: rgba(255,255,255,0.8); }
+
+/* 星球详情卡 */
+.wish-detail-card {
+  border-radius: 22px; padding: 24px 18px; color: white;
+  text-align: center; margin-bottom: 18px;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+  position: relative; overflow: hidden;
+}
+.wd-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; justify-content: center; }
+.wd-icon { font-size: 3rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+.wd-title { font-size: 1.2rem; font-weight: 900; }
+.wd-subtitle { font-size: 0.72rem; opacity: 0.7; }
+.wd-cost { font-size: 0.82rem; color: #FFE082; margin-bottom: 16px; }
+
+/* 能量进度条 */
+.wd-energy-bar { margin-bottom: 18px; }
+.wd-energy-label { font-size: 0.8rem; margin-bottom: 6px; }
+.wd-energy-track {
+  height: 14px; background: rgba(255,255,255,0.2); border-radius: 7px;
+  overflow: hidden;
+}
+.wd-energy-fill {
+  height: 100%; border-radius: 7px; background: linear-gradient(90deg, #FFE082, #FFD700);
+  transition: width 0.4s ease; width: 0%;
+}
+
+.wd-wish-btn {
+  display: block; margin: 0 auto; background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.5); border-radius: 24px;
+  padding: 10px 32px; font-size: 0.95rem; font-weight: bold;
+  color: white; cursor: pointer; transition: background 0.2s;
+}
+.wd-wish-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.wd-wish-btn:not(:disabled):active { background: rgba(255,255,255,0.45); }
+
+/* 奖项说明 */
+.wish-prizes { margin-top: 8px; }
+.wish-prize-section { margin-bottom: 14px; }
+.wish-prize-title { font-size: 0.82rem; font-weight: bold; color: var(--green-dark); margin-bottom: 6px; }
+.wish-prize-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+.wish-prize-card {
+  font-size: 0.7rem; padding: 4px 10px; border-radius: 10px;
+  background: rgba(255,255,255,0.55); color: var(--text);
+}
+/* 转换能量页面 */
+.convert-header { text-align: center; margin-bottom: 16px; }
+.convert-title { font-size: 1.05rem; font-weight: bold; color: var(--green-dark); margin-bottom: 6px; }
+.convert-desc { font-size: 0.78rem; color: var(--text-light); line-height: 1.5; }
+.convert-energy-info { font-size: 0.92rem; color: var(--green-dark); font-weight: bold; padding: 10px; background: rgba(255,224,130,0.25); border-radius: 12px; margin-bottom: 14px; text-align: center; }
+.convert-card-list { display: flex; flex-direction: column; gap: 10px; }
+.convert-card-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: rgba(255,255,255,0.45); border-radius: 14px;
+}
+.convert-card-emoji { font-size: 1.6rem; flex-shrink: 0; }
+.convert-card-info { flex: 1; }
+.convert-card-name { font-size: 0.88rem; font-weight: bold; }
+.convert-card-energy { font-size: 0.72rem; color: #D4A843; }
+.convert-card-count { font-size: 0.72rem; color: var(--text-light); }
+.convert-card-btn {
+  flex-shrink: 0; padding: 6px 14px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #D4A843, #C08030); color: white;
+  font-size: 0.78rem; font-weight: bold; cursor: pointer;
+}
+.convert-card-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pc-btn {
+  width: 100%; padding: 12px; border: none; border-radius: 14px;
+  font-size: 0.95rem; font-weight: bold; color: white; cursor: pointer;
+  transition: all 0.2s;
+}
+.planet-r  .pc-btn { background: linear-gradient(135deg, #E8A060, #C07030); box-shadow: 0 3px 12px rgba(200,120,50,0.3); }
+.planet-sr .pc-btn { background: linear-gradient(135deg, #4A90D9, #2A60A9); box-shadow: 0 3px 12px rgba(70,140,220,0.3); }
+.planet-ssr .pc-btn { background: linear-gradient(135deg, #E05555, #B71C1C); box-shadow: 0 3px 12px rgba(220,60,60,0.35); }
+.pc-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+.pc-btn:not(:disabled):active { transform: scale(0.96); }
+
+/* 许愿结果区域 */
+.wish-result-area {
+  margin-top: 8px; padding: 12px;
+  background: rgba(0,0,0,0.2); border-radius: 12px;
+  text-align: center; font-size: 0.82rem;
+}
+.wish-result-area .wish-result-level { font-weight: bold; margin-bottom: 6px; }
+.wish-result-area .wish-result-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.wish-card-badge {
+  padding: 6px 10px; border-radius: 8px; color: white; font-size: 0.72rem;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+/* ===== 成长任务 ===== */
+.growth-section {
+  margin-bottom: 18px;
+}
+.growth-section-title {
+  font-size: 0.9rem; font-weight: bold; color: var(--green-dark);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.growth-task-item {
+  display: flex; align-items: center; padding: 12px;
+  background: rgba(168,213,162,0.1); border-radius: 14px;
+  margin-bottom: 8px; gap: 10px; transition: all 0.2s;
+}
+.growth-task-item .gt-icon { font-size: 1.4rem; flex-shrink: 0; }
+.growth-task-item .gt-info { flex: 1; }
+.growth-task-item .gt-name { font-size: 0.85rem; font-weight: bold; color: var(--text); }
+.growth-task-item .gt-reward { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+.growth-task-item .gt-btn {
+  padding: 6px 14px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, var(--green-mid), #5B9BD5);
+  color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer;
+  white-space: nowrap; transition: transform 0.15s;
+}
+.growth-task-item .gt-btn:active { transform: scale(0.95); }
+.growth-task-item .gt-btn.done { background: #ccc; }
+
+/* Exchange Box (兑换区融合在成长任务里) */
+.exchange-box {
+  background: linear-gradient(135deg, rgba(123,79,191,0.08), rgba(74,144,217,0.08));
+  border-radius: 16px; padding: 16px; margin: 14px 0;
+  border: 1px solid rgba(123,79,191,0.15);
+}
+.exchange-title {
+  font-size: 0.9rem; font-weight: bold; color: #7B4FBF;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
+.exchange-items {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.exchange-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; background: white; border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.exchange-item .ex-icon { font-size: 1.6rem; }
+.exchange-item .ex-info { flex: 1; }
+.exchange-item .ex-name { font-size: 0.82rem; font-weight: bold; color: var(--text); }
+.exchange-item .ex-cost { font-size: 0.7rem; color: var(--text-light); }
+.exchange-item .ex-btn {
+  padding: 6px 14px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #7B4FBF, #5E35B1);
+  color: white; font-size: 0.75rem; font-weight: bold; cursor: pointer;
+  white-space: nowrap; transition: transform 0.15s;
+}
+.exchange-item .ex-btn:active { transform: scale(0.95); }
+.exchange-item .ex-btn:disabled { background: #ccc; }
+
+/* ===== 你的中心 (Collection) ===== */
+.collection-stats {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.collection-stat {
+  flex: 1; text-align: center; padding: 10px;
+  background: rgba(168,213,162,0.1); border-radius: 14px;
+}
+.collection-stat .cs-num { font-size: 1.3rem; font-weight: 900; color: var(--green-dark); }
+.collection-stat .cs-label { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+.collection-stat .cs-num.purple { color: #7B4FBF; }
+.collection-stat .cs-num.gold { color: #D4A843; }
+.collection-stat .cs-num.blue { color: #4A90D9; }
+
+.collection-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.collection-card {
+  border-radius: 16px; padding: 12px 10px; text-align: center;
+  position: relative; overflow: hidden; color: white;
+  transition: transform 0.2s; min-height: 100px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.collection-card .cc-icon { font-size: 1.8rem; }
+.collection-card .cc-name { font-size: 0.78rem; font-weight: bold; }
+.collection-card .cc-count {
+  position: absolute; top: 6px; right: 8px;
+  background: rgba(0,0,0,0.2); padding: 1px 8px;
+  border-radius: 10px; font-size: 0.65rem; font-weight: bold;
+}
+.collection-card.empty {
+  background: rgba(0,0,0,0.04) !important; color: #bbb !important;
+  border: 2px dashed #ccc;
+}
+.collection-card.empty .cc-icon { font-size: 1.4rem; opacity: 0.4; }
+
+/* ===== AI Float (Lobster) ===== */
+.ai-float {
+  position: fixed; width: 58px; height: 58px; border-radius: 50%;
+  background: linear-gradient(135deg, #FFD700, #FFB800, #FFA000);
+  box-shadow: 0 4px 20px rgba(255,180,0,0.45);
+  cursor: grab; z-index: 150; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 1.7rem; user-select: none; touch-action: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+  animation: lobsterPulse 2.5s infinite;
+}
+.ai-float:active { cursor: grabbing; transform: scale(1.1); }
+.ai-float.dragging { animation: none; box-shadow: 0 8px 32px rgba(255,180,0,0.6); }
+@keyframes lobsterPulse {
+  0%,100% { box-shadow: 0 4px 20px rgba(255,200,0,0.4), 0 0 40px rgba(255,180,0,0.15); }
+  50% { box-shadow: 0 4px 32px rgba(255,200,0,0.55), 0 0 60px rgba(255,160,0,0.3); }
+}
+.ai-float .ai-badge { position: absolute; top: -4px; right: -4px; background: var(--red); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+/* AI Chat Panel */
+.ai-chat-panel {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-radius: 22px 22px 0 0;
+  z-index: 250; max-height: 70vh; display: flex; flex-direction: column;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.15); transition: transform 0.3s ease;
+}
+.ai-chat-panel.hidden { transform: translateY(100%); }
+.ai-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--green-pale); }
+.ai-chat-header h3 { font-size: 1rem; color: var(--green-dark); }
+.ai-chat-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: #f5f5f5; font-size: 1rem; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; }
+.ai-chat-msgs { flex: 1; overflow-y: auto; padding: 14px; max-height: 40vh; }
+.ai-chat-msg { margin-bottom: 12px; display: flex; gap: 8px; }
+.ai-chat-msg.user { flex-direction: row-reverse; }
+.ai-chat-msg .bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 0.85rem; line-height: 1.5; }
+.ai-chat-msg.assistant .bubble { background: #F4F9F0; color: var(--text); border-bottom-left-radius: 4px; }
+.ai-chat-msg.user .bubble { background: var(--green-mid); color: white; border-bottom-right-radius: 4px; }
+.ai-chat-input-row { display: flex; gap: 8px; padding: 10px 14px 16px; border-top: 1px solid #f5f5f5; }
+.ai-chat-input-row input { flex: 1; padding: 10px 14px; border: 2px solid var(--green-pale); border-radius: 20px; font-size: 0.85rem; font-family: inherit; outline: none; }
+.ai-chat-input-row input:focus { border-color: var(--green-mid); }
+.ai-chat-input-row button { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--green-mid); color: white; font-size: 1rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.ai-quick-btns { display: flex; gap: 6px; padding: 4px 14px 8px; flex-wrap: wrap; }
+.ai-quick-btns button { padding: 5px 12px; border: 1px solid var(--green-light); border-radius: 14px; background: white; color: var(--green-dark); font-size: 0.72rem; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.ai-quick-btns button:active { background: var(--green-mid); color: white; }
+
+/* ===== Modal ===== */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s ease; }
+.modal-overlay.hidden { display: none; }
+.modal-overlay.center { align-items: center; }
+.modal-overlay.center .modal { border-radius: 20px; max-width: 340px; margin: 0 20px; }
+.reset-confirm-icon { font-size: 2.5rem; text-align: center; margin-bottom: 8px; }
+.reset-confirm-title { font-size: 1rem; font-weight: bold; text-align: center; color: #E05555; margin-bottom: 6px; }
+.reset-confirm-desc { font-size: 0.78rem; text-align: center; color: #888; margin-bottom: 18px; line-height: 1.5; }
+.modal-btns .btn-reset { background: #E05555; color: white; }
+.modal-btns .btn-reset:active { background: #C04040; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: white; border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-width: 500px; max-height: 75vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal h3 { font-size: 1.1rem; color: var(--green-dark); margin-bottom: 16px; text-align: center; }
+.modal input, .modal select { width: 100%; padding: 12px; border: 2px solid var(--green-pale); border-radius: 12px; font-size: 0.9rem; margin-bottom: 12px; font-family: inherit; }
+.modal input:focus, .modal select:focus { outline: none; border-color: var(--green-mid); }
+.modal-btns { display: flex; gap: 10px; }
+.modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 14px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+.modal-btns .btn-cancel { background: #f0f0f0; color: #888; }
+.modal-btns .btn-confirm { background: var(--green-mid); color: white; }
+.emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-bottom: 12px; }
+.emoji-option { width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 10px; font-size: 1.4rem; background: #fafafa; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.emoji-option.selected { border-color: var(--green-mid); background: rgba(168,213,162,0.2); }
+
+/* ===== Celebrations ===== */
+#celebration { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 350; }
+.celebration-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.3rem; color: var(--green-dark); font-weight: bold; text-align: center; pointer-events: none; z-index: 360; animation: popIn 0.5s ease; line-height: 1.7; }
+@keyframes popIn { 0% { transform: translate(-50%,-50%) scale(0.3); opacity: 0; } 70% { transform: translate(-50%,-50%) scale(1.1); } 100% { transform: translate(-50%,-50%) scale(1); opacity: 1; } }
+@keyframes taskBounce { 0%,100% { transform: scale(1); } 30% { transform: scale(1.15); } 60% { transform: scale(0.94); } 80% { transform: scale(1.05); } }
+@keyframes taskGlow { 0% { box-shadow: 0 0 0 0 rgba(74,140,63,0); } 40% { box-shadow: 0 0 0 6px rgba(74,140,63,0.2); } 100% { box-shadow: 0 0 0 0 rgba(74,140,63,0); } }
+.task-item.task-done-anim { animation: taskBounce 0.55s ease forwards, taskGlow 0.8s ease forwards; }
+@keyframes particleFly { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx),var(--ty)) scale(0.3); opacity: 0; } }
+.confetti { position: fixed; border-radius: 3px; pointer-events: none; z-index: 340; animation: fall linear forwards; }
+@keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #3A4A38; color: white; padding: 10px 24px; border-radius: 20px; font-size: 0.85rem; z-index: 400; pointer-events: none; animation: toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; white-space: nowrap; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+.chat-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 240; animation: fadeIn 0.2s ease; }
+.chat-backdrop.hidden { display: none; }
+</style>
+</head>
+<body>
+<!-- 存储状态指示器 -->
+<div id="storage-status" style="display:none;position:fixed;top:6px;right:80px;z-index:999;padding:4px 12px;border-radius:12px;font-size:0.72rem;font-weight:700;backdrop-filter:blur(6px);" onclick="warnStorage()"></div>
+
+<!-- 自然风景SVG背景（高山+树木+太阳+小溪+花草） -->
+<div id="nature-bg">
+<svg viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 太阳光芒 -->
+    <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFEE"/>
+      <stop offset="60%" stop-color="#FFE566"/>
+      <stop offset="100%" stop-color="#FFCC00"/>
+    </radialGradient>
+    <!-- 山体阴影 -->
+    <linearGradient id="mtnGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7AB87A"/>
+      <stop offset="100%" stop-color="#4A8C4A"/>
+    </linearGradient>
+    <linearGradient id="mtnGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5A9A5A"/>
+      <stop offset="100%" stop-color="#3A7A3A"/>
+    </linearGradient>
+    <!-- 树干 -->
+    <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5A3A1A"/>
+      <stop offset="50%" stop-color="#7A5230"/>
+      <stop offset="100%" stop-color="#5A3A1A"/>
+    </linearGradient>
+    <!-- 树冠 -->
+    <radialGradient id="canopyGrad1" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#6ACC44"/>
+      <stop offset="100%" stop-color="#2D7A20"/>
+    </radialGradient>
+    <radialGradient id="canopyGrad2" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#5ABB38"/>
+      <stop offset="100%" stop-color="#1E6A14"/>
+    </radialGradient>
+    <!-- 小溪 -->
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7EC8E3" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#5BA3C9" stop-opacity="0.75"/>
+    </linearGradient>
+    <!-- 草地 -->
+    <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AB87A" stop-opacity="0.72"/>
+      <stop offset="100%" stop-color="#5A9A5A" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- =========== 远处群山（浅色，有层次） =========== -->
+  <!-- 最远山层（淡蓝绿） -->
+  <path d="M0,900 Q0,820 30,790 Q70,750 110,770 Q150,740 190,760 Q230,730 270,755 Q310,740 350,770 Q380,750 400,760 L400,900 Z"
+        fill="#8ABD8A" opacity="0.50"/>
+  <!-- 中层山（中绿） -->
+  <path d="M0,900 Q0,840 20,810 Q60,780 100,800 Q140,770 180,790 Q220,760 260,780 Q300,765 340,800 Q370,785 400,795 L400,900 Z"
+        fill="#6AAD6A" opacity="0.3"/>
+  <!-- 近层山（深绿，有纹理） -->
+  <path d="M0,900 Q0,860 15,835 Q50,810 90,830 Q130,800 170,820 Q210,795 250,815 Q290,800 330,825 Q365,815 400,830 L400,900 Z"
+        fill="#4A9A4A" opacity="0.60"/>
+  <!-- 山体质感条纹 -->
+  <path d="M0,860 Q60,835 120,850 Q180,825 240,845 Q300,830 360,855 L400,860 L400,870 L360,865 Q300,850 240,860 Q180,845 120,855 Q60,840 0,865 Z"
+        fill="#3A8A3A" opacity="0.30"/>
+  <path d="M0,880 Q80,865 160,875 Q240,860 320,870 Q370,862 400,868 L400,878 L370,875 Q320,880 240,875 Q160,885 80,878 Z"
+        fill="#2D7A2D" opacity="0.25"/>
+
+  <!-- =========== 左下角 大树（写实风格） =========== -->
+  <!-- 树干（有纹理） -->
+  <rect x="14" y="748" width="18" height="130" rx="7" fill="url(#trunkGrad)" opacity="0.98"/>
+  <!-- 树皮纹理 -->
+  <path d="M18,760 Q22,780 20,800 Q24,820 22,840 Q20,855 18,868" stroke="#4A2E14" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <path d="M28,755 Q26,780 29,810 Q27,835 30,860" stroke="#4A2E14" stroke-width="1" fill="none" opacity="0.50"/>
+  <!-- 树枝 -->
+  <path d="M14,770 Q-2,755 -8,740" stroke="#7A5230" stroke-width="4" fill="none" opacity="0.75"/>
+  <path d="M32,775 Q46,758 54,742" stroke="#7A5230" stroke-width="3.5" fill="none" opacity="0.75"/>
+  <path d="M12,800 Q-6,790 -10,778" stroke="#7A5230" stroke-width="3" fill="none" opacity="0.72"/>
+  <!-- 树冠（多层叠加，有深浅） -->
+  <circle cx="22" cy="700" r="55" fill="url(#canopyGrad1)" opacity="0.72"/>
+  <circle cx="2"  cy="718" r="42" fill="url(#canopyGrad2)" opacity="0.98"/>
+  <circle cx="46" cy="712" r="46" fill="#3A8A28" opacity="0.65"/>
+  <circle cx="22" cy="672" r="46" fill="#2D7A20" opacity="0.70"/>
+  <!-- 树冠高光 -->
+  <circle cx="14" cy="680" r="18" fill="#8ADD60" opacity="0.25"/>
+  <!-- 树上小花 -->
+  <circle cx="12" cy="688" r="4"  fill="#FFD700" opacity="0.98"/>
+  <circle cx="32" cy="696" r="3.5" fill="#FF9AD4" opacity="0.65"/>
+  <circle cx="40" cy="710" r="4"  fill="#FFD700" opacity="0.75"/>
+  <circle cx="8"  cy="712" r="3"  fill="#FF80BF" opacity="0.95"/>
+
+  <!-- =========== 右下角 大树 =========== -->
+  <rect x="368" y="775" width="16" height="110" rx="7" fill="url(#trunkGrad)" opacity="0.98"/>
+  <path d="M372,790 Q376,810 374,830 Q378,850 376,868" stroke="#4A2E14" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <path d="M380,785 Q378,810 381,840 Q379,858 382,870" stroke="#4A2E14" stroke-width="1" fill="none" opacity="0.50"/>
+  <path d="M384,780 Q398,762 406,748" stroke="#7A5230" stroke-width="3.5" fill="none" opacity="0.95"/>
+  <path d="M368,770 Q354,755 346,742" stroke="#7A5230" stroke-width="3" fill="none" opacity="0.72"/>
+  <circle cx="378" cy="728" r="52" fill="url(#canopyGrad1)" opacity="0.70"/>
+  <circle cx="358" cy="746" r="40" fill="url(#canopyGrad2)" opacity="0.65"/>
+  <circle cx="400" cy="740" r="42" fill="#3A8A28" opacity="0.62"/>
+  <circle cx="378" cy="700" r="44" fill="#2D7A20" opacity="0.68"/>
+  <circle cx="370" cy="715" r="18" fill="#8ADD60" opacity="0.35"/>
+  <circle cx="364" cy="738" r="3.5" fill="#FFD700" opacity="0.65"/>
+  <circle cx="394" cy="732" r="3"   fill="#FF9AD4" opacity="0.75"/>
+
+  <!-- =========== 右上角 小树 =========== -->
+  <rect x="370" y="78" width="10" height="72" rx="4" fill="url(#trunkGrad)" opacity="0.95"/>
+  <path d="M378,90 Q392,78 400,68" stroke="#8B6340" stroke-width="2.5" fill="none" opacity="0.98"/>
+  <circle cx="376" cy="48" r="30" fill="#3A8A2A" opacity="0.60"/>
+  <circle cx="358" cy="62" r="24" fill="#4A9A38" opacity="0.55"/>
+  <circle cx="394" cy="58" r="26" fill="#2D7A20" opacity="0.56"/>
+  <circle cx="376" cy="34" r="24" fill="#5AAA44" opacity="0.52"/>
+  <circle cx="370" cy="52" r="12" fill="#8ADD60" opacity="0.25"/>
+
+  <!-- =========== 左侧中部 灌木丛 =========== -->
+  <g opacity="0.60">
+    <ellipse cx="6"  cy="462" rx="32" ry="24" fill="#3A8A2A"/>
+    <ellipse cx="28" cy="468" rx="26" ry="20" fill="#4A9A38"/>
+    <ellipse cx="-2" cy="472" rx="22" ry="16" fill="#2D7A20"/>
+  </g>
+  <!-- 灌木下的草 -->
+  <path d="M0,492 Q5,468 8,450 Q12,468 16,492" fill="#4A9A30" opacity="0.65"/>
+  <path d="M10,492 Q15,470 18,455 Q22,470 26,492" fill="#3A8A28" opacity="0.62"/>
+  <path d="M20,492 Q25,472 28,458 Q32,472 36,492" fill="#5AAA40" opacity="0.75"/>
+
+  <!-- =========== 右侧中部 灌木 =========== -->
+  <g opacity="0.58">
+    <ellipse cx="398" cy="492" rx="30" ry="22" fill="#3A8A2A"/>
+    <ellipse cx="378" cy="500" rx="24" ry="18" fill="#4A9A38"/>
+    <ellipse cx="402" cy="505" rx="20" ry="15" fill="#2D7A20"/>
+  </g>
+  <path d="M392,522 Q397,500 400,488 Q404,500 408,522" fill="#4A9A30" opacity="0.38"/>
+  <path d="M382,520 Q387,500 390,490 Q394,500 398,520" fill="#3A8A28" opacity="0.60"/>
+
+  <!-- =========== 花朵（明显可见，分散各处） =========== -->
+
+  <!-- 左下 大雏菊（黄色） -->
+  <g transform="translate(56,820)">
+    <circle cx="0" cy="-20" r="8" fill="url(#sunGrad)" opacity="1.0"/>
+    <!-- 花瓣 -->
+    <ellipse cx="0"  cy="-31" rx="5.5" ry="10" fill="#FFE8A0" opacity="1.0"/>
+    <ellipse cx="0"  cy="-9"  rx="5.5" ry="10" fill="#FFE8A0" opacity="1.0"/>
+    <ellipse cx="-11" cy="-20" rx="10" ry="5.5" fill="#FFE8A0" opacity="1.0"/>
+    <ellipse cx="11"  cy="-20" rx="10" ry="5.5" fill="#FFE8A0" opacity="1.0"/>
+    <ellipse cx="-8"  cy="-28" rx="5.5" ry="10" fill="#FFF0B0" opacity="0.75" transform="rotate(-45 -8 -28)"/>
+    <ellipse cx="8"   cy="-12" rx="5.5" ry="10" fill="#FFF0B0" opacity="0.75" transform="rotate(-45 8 -12)"/>
+    <ellipse cx="8"   cy="-28" rx="5.5" ry="10" fill="#FFF0B0" opacity="0.75" transform="rotate(45 8 -28)"/>
+    <ellipse cx="-8"  cy="-12" rx="5.5" ry="10" fill="#FFF0B0" opacity="0.75" transform="rotate(45 -8 -12)"/>
+    <line x1="0" y1="-12" x2="0" y2="0" stroke="#4A8C38" stroke-width="2.5" opacity="0.95"/>
+  </g>
+
+  <!-- 左下 粉花 -->
+  <g transform="translate(26,852)">
+    <circle cx="0" cy="-15" r="6" fill="#FF80BF" opacity="1.0"/>
+    <ellipse cx="0"  cy="-23" rx="4.5" ry="8" fill="#FFB8E0" opacity="1.0"/>
+    <ellipse cx="0"  cy="-7"  rx="4.5" ry="8" fill="#FFB8E0" opacity="1.0"/>
+    <ellipse cx="-8" cy="-15" rx="8" ry="4.5" fill="#FFB8E0" opacity="1.0"/>
+    <ellipse cx="8"  cy="-15" rx="8" ry="4.5" fill="#FFB8E0" opacity="1.0"/>
+    <line x1="0" y1="-9" x2="0" y2="0" stroke="#4A8C38" stroke-width="2" opacity="0.65"/>
+  </g>
+
+  <!-- 右下 浅粉花 -->
+  <g transform="translate(346,822)">
+    <circle cx="0" cy="-17" r="7" fill="#FFAACC" opacity="1.0"/>
+    <ellipse cx="0"  cy="-26" rx="5" ry="9" fill="#FFCCE8" opacity="1.0"/>
+    <ellipse cx="0"  cy="-8"  rx="5" ry="9" fill="#FFCCE8" opacity="1.0"/>
+    <ellipse cx="-9" cy="-17" rx="9" ry="5" fill="#FFCCE8" opacity="1.0"/>
+    <ellipse cx="9"  cy="-17" rx="9" ry="5" fill="#FFCCE8" opacity="1.0"/>
+    <line x1="0" y1="-10" x2="0" y2="0" stroke="#4A8C38" stroke-width="2.5" opacity="0.65"/>
+  </g>
+
+  <!-- 右中 蓝色小花 -->
+  <g transform="translate(392,475)">
+    <circle cx="0" cy="-13" r="5" fill="#66CCFF" opacity="1.0"/>
+    <ellipse cx="0"  cy="-20" rx="4" ry="7" fill="#C8EEFF" opacity="0.8"/>
+    <ellipse cx="0"  cy="-6"  rx="4" ry="7" fill="#C8EEFF" opacity="0.8"/>
+    <ellipse cx="-7" cy="-13" rx="7" ry="4" fill="#C8EEFF" opacity="0.8"/>
+    <ellipse cx="7"  cy="-13" rx="7" ry="4" fill="#C8EEFF" opacity="0.8"/>
+    <line x1="0" y1="-8" x2="0" y2="0" stroke="#4A8C38" stroke-width="2" opacity="0.75"/>
+  </g>
+
+  <!-- 左中 黄花 -->
+  <g transform="translate(16,418)">
+    <circle cx="0" cy="-12" r="5" fill="#FFD700" opacity="1.0"/>
+    <ellipse cx="0"  cy="-19" rx="4" ry="7" fill="#FFE8A0" opacity="0.8"/>
+    <ellipse cx="0"  cy="-5"  rx="4" ry="7" fill="#FFE8A0" opacity="0.8"/>
+    <ellipse cx="-7" cy="-12" rx="7" ry="4" fill="#FFE8A0" opacity="0.8"/>
+    <ellipse cx="7"  cy="-12" rx="7" ry="4" fill="#FFE8A0" opacity="0.8"/>
+    <line x1="0" y1="-7" x2="0" y2="0" stroke="#4A8C38" stroke-width="2" opacity="0.75"/>
+  </g>
+
+  <!-- 右上 粉花 -->
+  <g transform="translate(358,118)">
+    <circle cx="0" cy="-14" r="5" fill="#FF80BF" opacity="0.95"/>
+    <ellipse cx="0"  cy="-21" rx="4" ry="7" fill="#FFB8E0" opacity="0.95"/>
+    <ellipse cx="0"  cy="-7"  rx="4" ry="7" fill="#FFB8E0" opacity="0.95"/>
+    <ellipse cx="-7" cy="-14" rx="7" ry="4" fill="#FFB8E0" opacity="0.95"/>
+    <ellipse cx="7"  cy="-14" rx="7" ry="4" fill="#FFB8E0" opacity="0.95"/>
+    <line x1="0" y1="-9" x2="0" y2="0" stroke="#4A8C38" stroke-width="2" opacity="0.95"/>
+  </g>
+
+  <!-- =========== 底部草地（厚草，明显） =========== -->
+  <!-- 左侧厚草 -->
+  <g opacity="0.95">
+    <path d="M0,900 Q4,860 8,825 Q12,860 16,900" fill="#4A9A30"/>
+    <path d="M8,900 Q12,870 16,845 Q20,870 24,900" fill="#3A8A28"/>
+    <path d="M-4,900 Q2,875 5,855 Q8,875 12,900" fill="#5AAA40"/>
+    <path d="M18,900 Q22,860 26,830 Q30,860 34,900" fill="#4A9A30"/>
+    <path d="M30,900 Q35,868 38,850 Q42,868 46,900" fill="#3A8A28"/>
+    <path d="M-2,900 Q4,880 6,862 Q10,880 14,900" fill="#5AAA40"/>
+  </g>
+  <!-- 右侧厚草 -->
+  <g opacity="0.95">
+    <path d="M370,900 Q376,855 380,820 Q384,855 388,900" fill="#4A9A30"/>
+    <path d="M382,900 Q387,868 390,848 Q394,868 398,900" fill="#3A8A28"/>
+    <path d="M392,900 Q398,860 400,835 Q400,860 400,900" fill="#5AAA40"/>
+    <path d="M358,900 Q364,862 368,838 Q372,862 376,900" fill="#4A9A30"/>
+    <path d="M366,900 Q372,870 376,852 Q380,870 384,900" fill="#3A8A28"/>
+  </g>
+  <!-- 中间草地 -->
+  <path d="M185,900 Q191,862 196,842 Q200,862 206,900" fill="#4A9A30" opacity="0.65"/>
+
+  <!-- =========== 流动小溪（底部，明显可见） =========== -->
+  <g>
+    <!-- 溪床 -->
+    <path d="M0,880 Q50,874 100,880 Q160,886 200,880 Q260,874 300,880 Q360,886 400,880 L400,900 L0,900 Z"
+          fill="#5BA3C9" opacity="0.50"/>
+    <!-- 水面 -->
+    <path d="M0,880 Q50,875 100,880 Q160,885 200,880 Q260,875 300,880 Q360,885 400,880 L400,898 L0,898 Z"
+          fill="url(#waterGrad)" opacity="0.98"/>
+    <!-- 水波纹（流动感） -->
+    <path d="M0,886 Q25,884 50,886 Q75,888 100,886 Q125,884 150,886 Q175,888 200,886 Q225,884 250,886 Q275,888 300,886 Q325,884 350,886 Q375,888 400,886"
+          stroke="#C8E8F8" stroke-width="1.8" fill="none" opacity="0.6">
+      <animate attributeName="d"
+        values="M0,886 Q25,884 50,886 Q75,888 100,886 Q125,884 150,886 Q175,888 200,886 Q225,884 250,886 Q275,888 300,886 Q325,884 350,886 Q375,888 400,886;
+                M0,886 Q25,888 50,886 Q75,884 100,886 Q125,888 150,886 Q175,884 200,886 Q225,888 250,886 Q275,884 300,886 Q325,888 350,886 Q375,884 400,886;
+                M0,886 Q25,884 50,886 Q75,888 100,886 Q125,884 150,886 Q175,888 200,886 Q225,884 250,886 Q275,888 300,886 Q325,884 350,886 Q375,888 400,886"
+        dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M0,892 Q30,890 60,892 Q90,894 120,892 Q150,890 180,892 Q210,894 240,892 Q270,890 300,892 Q330,894 360,892 Q380,891 400,892"
+          stroke="#A8D8F0" stroke-width="1.5" fill="none" opacity="0.95">
+      <animate attributeName="d"
+        values="M0,892 Q30,890 60,892 Q90,894 120,892 Q150,890 180,892 Q210,894 240,892 Q270,890 300,892 Q330,894 360,892 Q380,891 400,892;
+                M0,892 Q30,894 60,892 Q90,890 120,892 Q150,894 180,892 Q210,890 240,892 Q270,894 300,892 Q330,890 360,892 Q380,893 400,892;
+                M0,892 Q30,890 60,892 Q90,894 120,892 Q150,890 180,892 Q210,894 240,892 Q270,890 300,892 Q330,894 360,892 Q380,891 400,892"
+        dur="4s" repeatCount="indefinite"/>
+    </path>
+    <!-- 水面高光 -->
+    <path d="M0,882 Q40,880 80,882 Q120,884 160,882 Q200,880 240,882 Q280,884 320,882 Q360,880 400,882"
+          stroke="#E8F8FF" stroke-width="1" fill="none" opacity="0.4">
+      <animate attributeName="d"
+        values="M0,882 Q40,880 80,882 Q120,884 160,882 Q200,880 240,882 Q280,884 320,882 Q360,880 400,882;
+                M0,882 Q40,884 80,882 Q120,880 160,882 Q200,884 240,882 Q280,880 320,882 Q360,884 400,882;
+                M0,882 Q40,880 80,882 Q120,884 160,882 Q200,880 240,882 Q280,884 320,882 Q360,880 400,882"
+        dur="2.5s" repeatCount="indefinite"/>
+    </path>
+    <!-- 溪里小石头 -->
+    <ellipse cx="55"  cy="894" rx="8" ry="4" fill="#B8C8B8" opacity="0.72"/>
+    <ellipse cx="150" cy="896" rx="6" ry="3" fill="#C0D0B8" opacity="0.98"/>
+    <ellipse cx="260" cy="893" rx="7" ry="3.5" fill="#B8C8B8" opacity="0.70"/>
+    <ellipse cx="350" cy="895" rx="6" ry="3" fill="#C0D0B8" opacity="0.65"/>
+  </g>
+
+  <!-- 溪边小花 -->
+  <g transform="translate(44,862)">
+    <circle cx="0" cy="-9" r="3.5" fill="#FFE066" opacity="0.8"/>
+    <ellipse cx="0"  cy="-14.5" rx="3" ry="5.5" fill="#FFE8A0" opacity="0.95"/>
+    <ellipse cx="0"  cy="-3.5"  rx="3" ry="5.5" fill="#FFE8A0" opacity="0.95"/>
+    <ellipse cx="-5.5" cy="-9" rx="5.5" ry="3" fill="#FFE8A0" opacity="0.95"/>
+    <ellipse cx="5.5"  cy="-9" rx="5.5" ry="3" fill="#FFE8A0" opacity="0.95"/>
+    <line x1="0" y1="-5" x2="0" y2="0" stroke="#4A8C38" stroke-width="1.5" opacity="0.75"/>
+  </g>
+  <g transform="translate(356,864)">
+    <circle cx="0" cy="-9" r="3.5" fill="#FF9AD4" opacity="0.95"/>
+    <ellipse cx="0"  cy="-14.5" rx="3" ry="5.5" fill="#FFCCE8" opacity="0.73"/>
+    <ellipse cx="0"  cy="-3.5"  rx="3" ry="5.5" fill="#FFCCE8" opacity="0.73"/>
+    <ellipse cx="-5.5" cy="-9" rx="5.5" ry="3" fill="#FFCCE8" opacity="0.73"/>
+    <ellipse cx="5.5"  cy="-9" rx="5.5" ry="3" fill="#FFCCE8" opacity="0.73"/>
+    <line x1="0" y1="-5" x2="0" y2="0" stroke="#4A8C38" stroke-width="1.5" opacity="0.75"/>
+  </g>
+
+  <!-- =========== 地面草地底色 =========== -->
+  <rect x="0" y="876" width="400" height="24" rx="0" fill="#4A8C38" opacity="0.08"/>
+  <rect x="0" y="886" width="400" height="14" rx="0" fill="#3A7A28" opacity="0.06"/>
+
+  <!-- =========== 太阳（左上角，非常明显） =========== -->
+  <!-- 光芒（更明显） -->
+  <g opacity="1.0">
+    <line x1="60" y1="2"  x2="60" y2="-12" stroke="#FFCC00" stroke-width="4" stroke-linecap="round"/>
+    <line x1="108" y1="28" x2="124" y2="16" stroke="#FFCC00" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="12" y1="28" x2="-4" y2="16" stroke="#FFCC00" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="90" y1="4"  x2="106" y2="12" stroke="#FFCC00" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="4"  x2="14" y2="12" stroke="#FFCC00" stroke-width="3" stroke-linecap="round"/>
+    <line x1="60" y1="62" x2="60" y2="76" stroke="#FFCC00" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="20" y1="56" x2="10" y2="66" stroke="#FFCC00" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="100" y1="56" x2="110" y2="66" stroke="#FFCC00" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <!-- 光晕（更明显） -->
+  <circle cx="60" cy="32" r="48" fill="#FFEE88" opacity="0.35"/>
+  <circle cx="60" cy="32" r="36" fill="#FFEEAA" opacity="0.45"/>
+  <!-- 太阳本体（更大更亮） -->
+  <circle cx="60" cy="32" r="30" fill="url(#sunGrad)" opacity="1.0"/>
+  <circle cx="60" cy="32" r="26" fill="#FFEE55" opacity="0.85"/>
+  <!-- 太阳笑脸（更明显） -->
+  <circle cx="52" cy="27" r="3" fill="#CC6600" opacity="0.95"/>
+  <circle cx="68" cy="27" r="3" fill="#CC6600" opacity="0.95"/>
+  <path d="M53,39 Q60,45 67,39" stroke="#CC6600" stroke-width="2.5" fill="none" opacity="0.92"/>
+
+</svg>
+</div>
+
+<!-- 保存/导入按钮（左上角） -->
+<div style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px;align-items:center;">
+  <button id="saveBtn" onclick="doSave()" style="padding:8px 16px;border-radius:20px;border:2px solid #FF6B35;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;font-size:0.8rem;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(255,107,53,0.4);">🦞 保存</button>
+  <button onclick="document.getElementById('importFileInput').click()" style="padding:7px 12px;border-radius:16px;border:2px solid #2196F3;background:rgba(255,255,255,0.95);color:#1976D2;font-size:0.75rem;font-weight:bold;cursor:pointer;">📥 导入</button>
+  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="doImport(this.files[0])">
+</div>
+<!-- 保存状态提示 -->
+<div id="saveToast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-size:0.85rem;font-weight:bold;color:#fff;z-index:9999;display:none;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.25);"></div>
+
+<!-- HEADER -->
+<div class="header" style="padding-top:52px;">
+  <h1>🌿 韬韬学习打卡表 🌿</h1>
+  <p class="subtitle" id="headerTip">今天也要加油哦～</p>
+</div>
+
+<!-- 存储状态提示条 -->
+<div id="storageNotice" style="max-width:370px;margin:0 auto 10px;padding:8px 14px;border-radius:12px;font-size:0.75rem;text-align:center;display:none;"></div>
+
+<!-- POINTS BAR -->
+<div class="points-bar">
+  <div class="points-item">
+    <div class="points-value" id="todayPoints">⚡ 0</div>
+    <div class="points-label">今日能量</div>
+  </div>
+  <div class="points-divider"></div>
+  <div class="points-item">
+    <div class="points-value" id="totalPoints">⚡ 0</div>
+    <div class="points-label">累计能量</div>
+  </div>
+  <div class="points-divider"></div>
+  <div class="points-item">
+    <div class="points-value" id="streakDays">🔥 0天</div>
+    <div class="points-label">连续打卡</div>
+  </div>
+</div>
+
+<!-- DATE NAV -->
+<div class="date-nav">
+  <button id="prevDay">◀</button>
+  <div class="date-display" id="dateDisplay">—</div>
+  <button id="nextDay">▶</button>
+  <button class="today-btn" id="goToday">回今天</button>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('daily')">📝 每日任务</button>
+  <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
+  <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
+  <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
+</div>
+
+<!-- ===== TAB: Daily ===== -->
+<div id="tab-daily" class="tab-content active">
+  <div class="leaves-area" id="leaves-tab-daily"></div>
+  <div class="section-header">
+    <div class="section-title">📝 每日任务</div>
+    <div class="section-actions">
+      <button onclick="openAddTaskModal('daily')" title="添加任务">＋</button>
+    </div>
+  </div>
+  <div id="dailyCard"></div>
+</div>
+<div class="reset-btn-wrapper" id="reset-wrapper-daily">
+  <button class="reset-btn" onclick="showResetConfirm()">🔄 恢复默认设置</button>
+</div>
+
+<!-- ===== TAB: Weekly ===== -->
+<div id="tab-weekly" class="tab-content">
+  <div class="leaves-area" id="leaves-tab-weekly"></div>
+  <div class="section-header">
+    <div class="section-title">📅 本周任务</div>
+    <div class="section-actions">
+      <button onclick="openAddTaskModal('weekly')" title="添加周任务">＋</button>
+    </div>
+  </div>
+  <div id="weeklyCard"></div>
+</div>
+<div class="reset-btn-wrapper" id="reset-wrapper-weekly">
+  <button class="reset-btn" onclick="showResetConfirm()">🔄 恢复默认设置</button>
+</div>
+
+<!-- ===== TAB: PK ===== -->
+<div id="tab-pk" class="tab-content">
+  <div class="leaves-area" id="leaves-tab-pk"></div>
+  <div class="section-header">
+    <div class="section-title">⚔️ 每晚PK战场 · 完成 +150能量</div>
+  </div>
+  <div id="pkCard"></div>
+</div>
+<div class="reset-btn-wrapper" id="reset-wrapper-pk">
+  <button class="reset-btn" onclick="showResetConfirm()">🔄 恢复默认设置</button>
+</div>
+
+<!-- ================================================================
+     权益卡 TAB — 小天才风格完整系统
+     ================================================================ -->
+<div id="tab-quanyi" class="tab-content">
+  <div class="leaves-area" id="leaves-tab-quanyi"></div>
+
+  <!-- Sub-navigation：天才PIN三大主题 -->
+  <div class="quanyi-subnav">
+    <button class="quanyi-subtab active" onclick="switchQuanyiPage('draw')">🎴 个性权益</button>
+    <button class="quanyi-subtab" onclick="switchQuanyiPage('wish')">🌟 许愿星球</button>
+    <button class="quanyi-subtab" onclick="switchQuanyiPage('growth')">🌱 成长任务</button>
+    <button class="quanyi-subtab" onclick="switchQuanyiPage('center')">🏠 你的中心</button>
+    <button class="quanyi-subtab" onclick="switchQuanyiPage('convert')">⚡ 转换能量</button>
+  </div>
+
+  <!-- === 抽卡页 === -->
+  <div id="qy-draw" class="quanyi-page active">
+    <div class="draw-stage-area">
+      <div class="draw-cards-grid" id="drawCardsGrid">
+        <!-- 6张卡片由JS动态生成 -->
+      </div>
+    </div>
+
+    <div class="draw-info-box">
+      <div class="draw-info-title">🪙 能量信息</div>
+      <div class="draw-info-row">
+        <span>当前能量：<b id="drawTabPoints">0</b></span>
+        <span> | </span>
+        <span>抽卡机会：<b id="drawTabChances">0</b> 次</span>
+      </div>
+      <div class="draw-info-row">
+        <button id="btnExchangeDraw" onclick="exchangeDrawFromTab()">消耗1500能量兑换1次抽卡</button>
+      </div>
+    </div>
+
+    <!-- 稀有度说明 -->
+    <div style="margin-top:16px;padding:14px;background:rgba(168,213,162,0.1);border-radius:16px;">
+      <div style="font-size:0.88rem;font-weight:bold;color:var(--green-dark);margin-bottom:10px;">📊 卡片稀有度</div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FF1744,#B71C1C);color:white;">
+          <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SSR</div>
+          <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">传说级</div>
+          <div style="font-size:0.65rem;opacity:0.8;">10%</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#2979FF,#0D47A1);color:white;">
+          <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SR</div>
+          <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">稀有级</div>
+          <div style="font-size:0.65rem;opacity:0.8;">30%</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FFAB91,#E64A19);color:white;">
+          <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">R</div>
+          <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">普通级</div>
+          <div style="font-size:0.65rem;opacity:0.8;">60%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 许愿星球 - 星球选择页 === -->
+  <div id="qy-wish" class="quanyi-page">
+    <div class="wish-planet-select">
+      <div class="planet-card planet-r" onclick="enterWishPlanet('R')">
+        <div class="pc-stars"></div>
+        <div class="pc-header">
+          <div class="pc-icon">🪐</div>
+          <div>
+            <div class="pc-title">R星球</div>
+            <div class="pc-subtitle">普通卡牌 · 初级许愿</div>
+          </div>
+        </div>
+        <div class="pc-cost">⚡ 需 5,000 能量/次</div>
+        <div class="pc-btn-review">点击进入 →</div>
+      </div>
+      <div class="planet-card planet-sr" onclick="enterWishPlanet('SR')">
+        <div class="pc-stars"></div>
+        <div class="pc-header">
+          <div class="pc-icon">🌍</div>
+          <div>
+            <div class="pc-title">SR星球</div>
+            <div class="pc-subtitle">稀有卡牌 · 中级许愿</div>
+          </div>
+        </div>
+        <div class="pc-cost">⚡ 需 20,000 能量/次</div>
+        <div class="pc-btn-review">点击进入 →</div>
+      </div>
+      <div class="planet-card planet-ssr" onclick="enterWishPlanet('SSR')">
+        <div class="pc-stars"></div>
+        <div class="pc-header">
+          <div class="pc-icon">⭐</div>
+          <div>
+            <div class="pc-title">SSR星球</div>
+            <div class="pc-subtitle">传说卡牌 · 高级许愿</div>
+          </div>
+        </div>
+        <div class="pc-cost">⚡ 需 40,000 能量/次</div>
+        <div class="pc-btn-review">点击进入 →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 许愿星球 - 星球详情页 === -->
+  <div id="qy-wish-detail" class="quanyi-page">
+    <button class="wish-back-btn" onclick="exitWishPlanet()">← 返回星球选择</button>
+    <div class="wish-detail-card" id="wishDetailCard">
+      <div class="wd-header" id="wishDetailHeader">
+        <div class="wd-icon" id="wishDetailIcon">🪐</div>
+        <div>
+          <div class="wd-title" id="wishDetailTitle">R星球</div>
+          <div class="wd-subtitle" id="wishDetailSubtitle">普通卡牌 · 初级许愿</div>
+        </div>
+      </div>
+      <div class="wd-cost" id="wishDetailCost">⚡ 每次许愿消耗 5,000 能量</div>
+      <div class="wd-energy-bar">
+        <div class="wd-energy-label">当前能量：<b id="wishCurrentEnergy">0</b> / <span id="wishCostSpan">5,000</span></div>
+        <div class="wd-energy-track"><div class="wd-energy-fill" id="wishEnergyFill"></div></div>
+      </div>
+      <button class="wd-wish-btn" id="btnDoWish" onclick="confirmWish()">🌟 许愿！</button>
+      <div class="wish-result-area" id="wishResultArea" style="display:none;"></div>
+    </div>
+    <div class="wish-prizes" id="wishPrizes"></div>
+  </div>
+
+  <!-- === 成长任务 + 兑换 === -->
+  <div id="qy-growth" class="quanyi-page">
+    <!-- 成长任务 -->
+    <div class="growth-section">
+      <div class="growth-section-title">🌱 成长任务</div>
+      <div id="growthTaskList"></div>
+    </div>
+
+    <!-- 能量兑换区 -->
+    <div class="exchange-box">
+      <div class="exchange-title">💎 能量兑换</div>
+      <div class="exchange-items">
+        <div class="exchange-item">
+          <div class="ex-icon">🎴</div>
+          <div class="ex-info">
+            <div class="ex-name">抽卡机会 ×1</div>
+            <div class="ex-cost">消耗 1500 能量</div>
+          </div>
+          <button class="ex-btn" id="exDraw1" onclick="exchangeItem('draw1')">兑换</button>
+        </div>
+        <div class="exchange-item">
+          <div class="ex-icon">🎴🎴</div>
+          <div class="ex-info">
+            <div class="ex-name">抽卡机会 ×3</div>
+            <div class="ex-cost">消耗 4000 能量 (省500)</div>
+          </div>
+          <button class="ex-btn" id="exDraw3" onclick="exchangeItem('draw3')">兑换</button>
+        </div>
+        <div class="exchange-item">
+          <div class="ex-icon">⭐</div>
+          <div class="ex-info">
+            <div class="ex-name">许愿能量 ×10</div>
+            <div class="ex-cost">消耗 5000 能量，用于许愿</div>
+          </div>
+          <button class="ex-btn" id="exWish" onclick="exchangeItem('wish')">兑换</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 你的中心 === -->
+  <div id="qy-center" class="quanyi-page">
+    <div class="collection-stats">
+      <div class="collection-stat">
+        <div class="cs-num" id="collOwned">0</div>
+        <div class="cs-label">已收集</div>
+      </div>
+      <div class="collection-stat">
+        <div class="cs-num blue" id="collRare">0</div>
+        <div class="cs-label">SR ⭐⭐</div>
+      </div>
+      <div class="collection-stat">
+        <div class="cs-num" style="color:#D50000;" id="collLegend">0</div>
+        <div class="cs-label">SSR ⭐⭐⭐</div>
+      </div>
+      <div class="collection-stat">
+        <div class="cs-num blue" id="collTotal">15</div>
+        <div class="cs-label">全套收集</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">📦 我的收藏</div>
+    </div>
+    <div class="collection-grid" id="collectionGrid"></div>
+  </div>
+
+  <!-- === 转换能量页 === -->
+  <div id="qy-convert" class="quanyi-page">
+    <div class="convert-header">
+      <div class="convert-title">⚡ 转换能量</div>
+      <div class="convert-desc">将已收集的卡片转换为能量<br>转换后卡片将消失，请谨慎操作！</div>
+    </div>
+    <div class="convert-energy-info">当前能量：<b id="convertCurrentEnergy">0</b></div>
+    <div class="convert-card-list" id="convertCardList"></div>
+  </div>
+</div>
+
+<!-- ===== FLOATING AI ===== -->
+<div class="ai-float" id="aiFloat" style="right:16px; top:40%;">
+  🦞
+  <div class="ai-badge" id="aiBadge">0</div>
+</div>
+
+<!-- AI Chat Panel -->
+<div class="ai-chat-panel hidden" id="aiChatPanel">
+  <div class="ai-chat-header">
+    <h3>🦞 龙虾学习助手</h3>
+    <button class="ai-chat-close" onclick="closeAIChat()">✕</button>
+  </div>
+  <div class="ai-quick-btns" id="aiQuickBtns">
+    <button onclick="aiQuick('analyze')">🔍 今日分析</button>
+    <button onclick="aiQuick('encourage')">💬 来点鼓励</button>
+    <button onclick="aiQuick('tip')">💡 学习技巧</button>
+    <button onclick="aiQuick('report')">📋 周报</button>
+  </div>
+  <div class="ai-chat-msgs" id="aiChatMsgs">
+    <div class="ai-chat-msg assistant">
+      <div class="bubble">你好韬韬！我是龙虾助手 🦞<br>咔嚓咔嚓～有什么需要帮忙的吗？</div>
+    </div>
+  </div>
+  <div class="ai-chat-input-row">
+    <input type="text" id="aiChatInput" placeholder="问我任何问题..." onkeydown="if(event.key==='Enter')aiSend()">
+    <button onclick="aiSend()">⬆</button>
+  </div>
+</div>
+<div class="chat-backdrop hidden" id="chatBackdrop" onclick="closeAIChat()"></div>
+
+<!-- ===== ADD TASK MODAL ===== -->
+<div class="modal-overlay hidden" id="addTaskModal">
+  <div class="modal">
+    <h3 id="modalTitle">添加新任务</h3>
+    <label style="font-size:0.82rem;color:#888;display:block;margin-bottom:4px;">选择图标</label>
+    <div class="emoji-grid" id="emojiGrid"></div>
+    <input type="text" id="taskNameInput" placeholder="任务名称" maxlength="30">
+    <div id="weeklyTargetRow" style="display:none;">
+      <label style="font-size:0.82rem;color:#888;display:block;margin-bottom:4px;">周目标次数</label>
+      <input type="number" id="taskTargetInput" value="1" min="1" max="99">
+      <label style="font-size:0.82rem;color:#888;display:block;margin-bottom:4px;">单位</label>
+      <input type="text" id="taskUnitInput" value="次" maxlength="4">
+    </div>
+    <label style="font-size:0.82rem;color:#888;display:block;margin-bottom:4px;">能量值</label>
+    <input type="number" id="taskPointsInput" value="100" min="0" max="2000">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-confirm" id="btnConfirm" onclick="confirmAddTask()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div class="modal-overlay hidden center" id="resetConfirmModal">
+  <div class="modal">
+    <div class="reset-confirm-icon">⚠️</div>
+    <div class="reset-confirm-title">确定要恢复默认设置吗？</div>
+    <div class="reset-confirm-desc">所有打卡记录、能量、卡片收藏<br>和许愿数据都将被清除<br>此操作不可撤销！</div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="hideResetConfirm()">取消</button>
+      <button class="btn-reset" onclick="doResetAll()">确定重置</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div id="celebration">
+  <div class="celebration-text" id="celebrationText"></div>
+</div>
+
+<script>
+'use strict';
+
+// ============ 工具函数 ============
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+// ============ DATA ============
+const DEFAULT_DAILY_TASKS = [
+  { id: 'd1', label: '起床晨读（妈妈要抽查）', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd2', label: '听课（要多点时间听英语）', emoji: '📺', points: 100, builtin: true },
+  { id: 'd3', label: 'Tiddy英语口语练习 ×1篇', emoji: '🗣️', points: 100, builtin: true },
+  { id: 'd4', label: '可可英语朗读 ×1篇', emoji: '📖', points: 100, builtin: true },
+  { id: 'd5', label: '60秒知天下（新闻）', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd6', label: '跑步运动', emoji: '🏃', points: 100, builtin: true },
+  { id: 'd7', label: '完成学校作业', emoji: '✏️', points: 100, builtin: true },
+  { id: 'd8', label: '晚上9:45看书（中文书+英语书）', emoji: '📚', points: 100, builtin: true },
+  { id: 'd9', label: '洗自己的袜子', emoji: '🧦', points: 100, builtin: true },
+  { id: 'd10', label: '晚上最迟10:15睡觉', emoji: '😴', points: 100, builtin: true }
+];
+const DEFAULT_WEEKLY_TASKS = [
+  { id: 'w1', label: 'Tiddy新闻（五六年级）', emoji: '📰', target: 1, unit: '个', points: 200, builtin: true },
+  { id: 'w2', label: 'RAZ精读', emoji: '📚', target: 3, unit: '篇', points: 200, builtin: true },
+  { id: 'w3', label: '小咖文言文', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w4', label: '文言文写作', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w5', label: '数学思维导图或习题（PK用）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w6', label: '大语文PK任务', emoji: '📝', target: 2, unit: '个', points: 200, builtin: true },
+  { id: 'w7', label: '家务（洗碗/扫地/整理等）', emoji: '🧹', target: 5, unit: '次', points: 0, builtin: true }
+];
+const PK_SCHEDULE = {
+  '周一': [
+    { time: '19:00', subject: '数学 PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+  ],
+  '周二': [
+    { time: '19:00', subject: '大语文（世界人文地理）', icon: '🌍' },
+    { time: '20:00', subject: '中文助教', icon: '📝' },
+    { time: '20:35', subject: '大语文（希腊神话）', icon: '⚡' }
+  ],
+  '周三': [
+    { time: '19:00', subject: '数学 PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+  ],
+  '周四': [
+    { time: '20:00', subject: '中文助教', icon: '📝' },
+    { time: '20:35', subject: '大语文（地理学家）', icon: '🗺️' }
+  ],
+  '周五': [
+    { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
+    { time: '21:00', subject: '世界历史（准备）', icon: '📖' }
+  ],
+  '周六': [
+    { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
+    { time: '20:30', subject: '世界历史', icon: '🏛️' }
+  ],
+  '周日': [
+    { time: '20:30', subject: '世界历史（准备）', icon: '📖' }
+  ]
+};
+const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+const ENCOURAGE = ['太棒啦韬韬！🎉 你是最棒的！','完美的一天！🌟 继续加油！','💖 大龙龙为你骄傲！','太厉害了！🏆 继续保持！','🌈 每一份努力都不会白费！','你是超级小学生！⭐ Keep going!','🎈 做得好！继续冲冲冲！','💪 今天也要元气满满哦！'];
+const PARTICLE_COLORS = ['#4A8C3F','#7CB868','#A8D5A2','#D4E8D0','#C8DDB8','#E8C840','#D4942A','#5B9BD5','#8BC34A'];
+const EMOJI_OPTIONS = ['📖','📚','✏️','📝','🔢','🌍','🏃','🎵','🎨','🧪','🗣️','💻','🧩','🎯','⭐','🌟','🔥','💪','📺','🏛️','⚡','🗺️','🇬🇧','🧹','😴','🍎','🎒','🏆','📰','🌈','🍪','🥛','🍞'];
+
+// ============ 天才PIN 权益卡池 ============
+// SSR（红色主色调）× 5 — 概率最低
+// SR（蓝色主色调）× 5 — 中等概率
+// R（肉色主色调）× 5  — 概率最高
+const CARD_POOL = [
+  // ===== SSR 系列（红色系）=====
+  { id: 'ssr1', name: 'SSR1', rarity: 'SSR', stars: 3,
+    cls: 'card-g-ssr',
+    emoji: '🔴', energy: 9000,
+    desc: '传说级权益卡' },
+  { id: 'ssr2', name: 'SSR2', rarity: 'SSR', stars: 3,
+    cls: 'card-g-ssr',
+    emoji: '🔴', energy: 13000,
+    desc: '传说级权益卡' },
+  { id: 'ssr3', name: 'SSR3', rarity: 'SSR', stars: 3,
+    cls: 'card-g-ssr',
+    emoji: '🔴', energy: 14000,
+    desc: '传说级权益卡' },
+  { id: 'ssr4', name: 'SSR4', rarity: 'SSR', stars: 3,
+    cls: 'card-g-ssr',
+    emoji: '🔴', energy: 15000,
+    desc: '传说级权益卡' },
+  { id: 'ssr5', name: 'SSR5', rarity: 'SSR', stars: 3,
+    cls: 'card-g-ssr',
+    emoji: '🔴', energy: 16600,
+    desc: '传说级权益卡' },
+  // ===== SR 系列（蓝色系）=====
+  { id: 'sr1', name: 'SR1', rarity: 'SR', stars: 2,
+    cls: 'card-g-sr',
+    emoji: '🔵', energy: 3900,
+    desc: '稀有级权益卡' },
+  { id: 'sr2', name: 'SR2', rarity: 'SR', stars: 2,
+    cls: 'card-g-sr',
+    emoji: '🔵', energy: 4900,
+    desc: '稀有级权益卡' },
+  { id: 'sr3', name: 'SR3', rarity: 'SR', stars: 2,
+    cls: 'card-g-sr',
+    emoji: '🔵', energy: 6000,
+    desc: '稀有级权益卡' },
+  { id: 'sr4', name: 'SR4', rarity: 'SR', stars: 2,
+    cls: 'card-g-sr',
+    emoji: '🔵', energy: 7000,
+    desc: '稀有级权益卡' },
+  { id: 'sr5', name: 'SR5', rarity: 'SR', stars: 2,
+    cls: 'card-g-sr',
+    emoji: '🔵', energy: 8600,
+    desc: '稀有级权益卡' },
+  // ===== R 系列（肉色系）=====
+  { id: 'r1', name: 'R1', rarity: 'R', stars: 1,
+    cls: 'card-g-r',
+    emoji: '🟡', energy: 200,
+    desc: '普通级权益卡' },
+  { id: 'r2', name: 'R2', rarity: 'R', stars: 1,
+    cls: 'card-g-r',
+    emoji: '🟡', energy: 800,
+    desc: '普通级权益卡' },
+  { id: 'r3', name: 'R3', rarity: 'R', stars: 1,
+    cls: 'card-g-r',
+    emoji: '🟡', energy: 1400,
+    desc: '普通级权益卡' },
+  { id: 'r4', name: 'R4', rarity: 'R', stars: 1,
+    cls: 'card-g-r',
+    emoji: '🟡', energy: 2200,
+    desc: '普通级权益卡' },
+  { id: 'r5', name: 'R5', rarity: 'R', stars: 1,
+    cls: 'card-g-r',
+    emoji: '🟡', energy: 3000,
+    desc: '普通级权益卡' },
+  // ===== 限定系列（金色系）凹凸世界主角 =====
+  { id: 'limited_jin', name: '金', rarity: '限定', stars: 3,
+    cls: 'card-g-limited',
+    emoji: '👑', energy: 8888,
+    desc: '凹凸世界主角 · 限定卡' },
+  { id: 'limited_leishi', name: '雷狮', rarity: '限定', stars: 2,
+    cls: 'card-g-limited',
+    emoji: '⚡', energy: 1888,
+    desc: '凹凸世界 · 限定卡' },
+  { id: 'limited_anmixiu', name: '安迷修', rarity: '限定', stars: 2,
+    cls: 'card-g-limited',
+    emoji: '🛡️', energy: 888,
+    desc: '凹凸世界 · 限定卡' },
+  { id: 'limited_gerui', name: '格瑞', rarity: '限定', stars: 3,
+    cls: 'card-g-limited',
+    emoji: '⚔️', energy: 6888,
+    desc: '凹凸世界 · 限定卡' },
+  { id: 'limited_jiadeluosi', name: '嘉德罗斯', rarity: '限定', stars: 3,
+    cls: 'card-g-limited',
+    emoji: '🔥', energy: 7888,
+    desc: '凹凸世界 · 限定卡' }
+];
+
+// 抽卡概率：传说级5%，稀有级6%，普通级89%（普通级只含R1~R4）
+function weightedDrawCard() {
+  let rand = Math.random();
+  if (rand < 0.05) {
+    // 传说级：SSR + 限定
+    let pool = CARD_POOL.filter(c => c.rarity === 'SSR' || c.rarity === '限定');
+    return pool[Math.floor(Math.random() * pool.length)];
+  } else if (rand < 0.11) {
+    // 稀有级：SR
+    let pool = CARD_POOL.filter(c => c.rarity === 'SR');
+    return pool[Math.floor(Math.random() * pool.length)];
+  } else {
+    // 普通级：只含 R1~R4
+    let pool = CARD_POOL.filter(c => c.rarity === 'R' && ['r1','r2','r3','r4'].includes(c.id));
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+}
+
+// 默认许愿
+const DEFAULT_WISHES = [
+  { id: 'ws1', name: '去一次游乐园', desc: '考完试就去！', target: 50, current: 0, icon: '🎢', color: '#FF6F00' },
+  { id: 'ws2', name: '买一个新玩具', desc: '努力攒能量兑换', target: 80, current: 0, icon: '🧸', color: '#7B4FBF' },
+  { id: 'ws3', name: '全家出游', desc: '周末一起去郊游', target: 100, current: 0, icon: '🚗', color: '#4A90D9' }
+];
+
+// 成长任务
+const GROWTH_TASKS = [
+  { id: 'g1', name: '连续打卡7天', reward: '抽卡机会 ×2', icon: '🔥', check: function() { return calcStreak() >= 7; }, claimedKey: 'gt_g1' },
+  { id: 'g2', name: '本周周任务全部完成', reward: '抽卡机会 ×3', icon: '📅', check: function() { let wk = weekKey(currentDate); let wc = weeklyCheckins[wk]||{}; return weeklyTasks.length > 0 && weeklyTasks.every(t => (wc[t.id]||0) >= t.target); }, claimedKey: 'gt_g2' },
+  { id: 'g3', name: '每日全部任务完成3天', reward: '许愿能量 ×20', icon: '✅', check: function() { return countAllDoneDays() >= 3; }, claimedKey: 'gt_g3' },
+  { id: 'g4', name: '今日所有PK全勤', reward: '抽卡机会 ×1', icon: '⚔️', check: function() { let dk = dateKey(currentDate); let pk = pkCheckins[dk]||{}; let wd = WEEKDAY_NAMES[currentDate.getDay()]; let s = PK_SCHEDULE[wd]||[]; return s.length > 0 && s.every((_,i) => pk[i] === 1); }, claimedKey: 'gt_g4' },
+  { id: 'g5', name: '累计获得50000能量', reward: 'SSR许愿×1', icon: '🏆', check: function() { return totalPoints >= 50000; }, claimedKey: 'gt_g5' }
+];
+
+// ============ APP STATE ============
+let currentDate = new Date();
+let dailyTasks = [...DEFAULT_DAILY_TASKS];
+let weeklyTasks = [...DEFAULT_WEEKLY_TASKS];
+let dailyCheckins = {};
+let weeklyCheckins = {};
+let pkCheckins = {};
+let totalPoints = 0;
+let drawsAvailable = 0;
+let drawHistory = [];
+let collection = {}; // { cardId: count }
+let wishes = [...DEFAULT_WISHES];
+let wishEnergy = 0; // 许愿能量值
+let claimHistory = {}; // { key: true } for growth tasks
+let selectedEmoji = '📖';
+let aiFloatY = null;
+let currentQuanyiPage = 'draw';
+function warnStorage() {
+  let el = document.getElementById('storage-status');
+  if (!el) return;
+  if (_storageType === 'local') {
+    el.style.display = 'block';
+    el.style.background = 'rgba(74,140,63,0.18)';
+    el.style.color = '#2D5A27';
+    el.textContent = '⚡ 本地存储正常';
+  } else if (_storageType === 'session') {
+    el.style.display = 'block';
+    el.style.background = 'rgba(91,155,213,0.18)';
+    el.style.color = '#3A6EA5';
+    el.textContent = '⚡ 会话存储（关闭浏览器失效）';
+  } else if (_storageType === 'name') {
+    el.style.display = 'block';
+    el.style.background = 'rgba(212,168,67,0.22)';
+    el.style.color = '#7A5A20';
+    el.textContent = '⚡ 临时存储（关闭标签页失效）';
+    showToast('⚠️ 当前使用临时存储，关闭标签页后数据会丢失！');
+  } else {
+    el.style.display = 'block';
+    el.style.background = 'rgba(224,85,85,0.18)';
+    el.style.color = '#C0392B';
+    el.textContent = '⚡ 无法保存数据！';
+    showToast('⚠️ 无法保存数据！请通过 http:// 方式打开此文件。');
+  }
+}
+
+// ============ STORAGE ============
+let storage = null;
+let _storageType = 'none';
+
+// window.name 降级存储（file:// 协议也支持，关闭标签页后失效）
+let _nameData = {};
+function _loadNameData() { try { _nameData = JSON.parse(window.name || '{}'); } catch(e) { _nameData = {}; } }
+function _saveNameData() { try { window.name = JSON.stringify(_nameData); } catch(e) {} }
+
+const _nameStorage = {
+  getItem(k) { _loadNameData(); return _nameData[k] || null; },
+  setItem(k, v) { _loadNameData(); _nameData[k] = String(v); _saveNameData(); },
+  removeItem(k) { _loadNameData(); delete _nameData[k]; _saveNameData(); }
+};
+
+function initStorage() {
+  // 1. 尝试 localStorage
+  try { localStorage.setItem('__t__','1'); localStorage.removeItem('__t__'); storage=localStorage; _storageType='local'; return; } catch(e){}
+  // 2. 尝试 sessionStorage
+  try { sessionStorage.setItem('__t__','1'); sessionStorage.removeItem('__t__'); storage=sessionStorage; _storageType='session'; return; } catch(e){}
+  // 3. 降级到 window.name
+  try { _loadNameData(); storage = _nameStorage; _storageType = 'name'; return; } catch(e){}
+  storage = null; _storageType = 'none';
+}
+
+function sGet(k) {
+  if (!storage) return null;
+  try { return storage.getItem(k); } catch(e) { return null; }
+}
+function sSet(k, v) {
+  if (!storage) return;
+  try { storage.setItem(k, v); } catch(e) {}
+}
+
+
+// ============ 保存/导入（可靠方案） ============
+// 保存：存localStorage + 下载JSON备份文件
+function doSave() {
+  // 1. 存localStorage
+  try { saveAll(); } catch(e) { console.log('localStorage保存失败', e); }
+
+  // 2. 组装所有数据
+  var data = {
+    version: 'final-v1',
+    date: new Date().toISOString(),
+    dailyTasks: dailyTasks,
+    weeklyTasks: weeklyTasks,
+    dailyCheckins: dailyCheckins,
+    weeklyCheckins: weeklyCheckins,
+    pkCheckins: pkCheckins,
+    totalPoints: totalPoints,
+    drawsAvailable: drawsAvailable,
+    drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
+    drawHistory: drawHistory,
+    collection: collection,
+    wishes: wishes,
+    wishEnergy: wishEnergy,
+    claimHistory: claimHistory,
+    aiFloatY: aiFloatY
+  };
+
+  // 3. 下载JSON文件
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var today = new Date();
+  var fname = '韬韬打卡备份_' + today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate()) + '.json';
+  a.href = url;
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  // 4. 视觉反馈
+  showSaveToast('✅ 保存成功！备份文件已下载', '#4CAF50');
+  // 按钮动画
+  var btn = document.getElementById('saveBtn');
+  if (btn) {
+    btn.innerHTML = '✅ 已保存';
+    btn.style.background = 'linear-gradient(135deg,#4CAF50,#388E3C)';
+    btn.style.borderColor = '#388E3C';
+    setTimeout(function() {
+      btn.innerHTML = '🦞 保存';
+      btn.style.background = 'linear-gradient(135deg,#FF8C42,#FF6B35)';
+      btn.style.borderColor = '#FF6B35';
+    }, 2000);
+  }
+}
+
+// 导入：读取JSON备份文件并恢复数据
+function doImport(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      // 恢复数据
+      if (data.dailyTasks) dailyTasks = data.dailyTasks;
+      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
+      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
+      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
+      if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
+      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
+      if (data.drawHistory) drawHistory = data.drawHistory;
+      if (data.collection) collection = data.collection;
+      if (data.wishes) wishes = data.wishes;
+      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
+      if (data.claimHistory) claimHistory = data.claimHistory;
+      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
+      // 恢复抽卡网格
+      if (data.drawGridCards) {
+        drawGridCards = data.drawGridCards.map(function(s) {
+          return {
+            card: s.cardId ? CARD_POOL.find(function(c) { return c.id === s.cardId; }) || null : null,
+            flipped: s.flipped,
+            animating: s.animating
+          };
+        });
+      }
+      // 保存到localStorage
+      try { saveAll(); } catch(e) {}
+      // 刷新界面
+      renderCurrentTab();
+      updatePointsUI();
+      showSaveToast('✅ 导入成功！数据已恢复', '#4CAF50');
+    } catch(err) {
+      showSaveToast('❌ 导入失败：文件格式错误', '#F44336');
+      console.error('导入失败', err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+//  toast提示
+function showSaveToast(msg, color) {
+  var el = document.getElementById('saveToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.background = color || '#4CAF50';
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { el.style.display = 'none'; }, 400);
+  }, 2500);
+}
+
+// 检测存储状态并显示提示
+function checkStorage() {
+  var notice = document.getElementById('storageNotice');
+  if (!notice) return;
+  var isFileProtocol = (window.location.protocol === 'file:');
+  if (isFileProtocol) {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(255,235,200,0.95)';
+    notice.style.color = '#E65100';
+    notice.style.border = '1px solid #FFB74D';
+    notice.innerHTML = '⚠️ 当前为文件模式（直接打开HTML文件），数据可能无法自动保存。<br>请每次修改后点击 <b>🦞 保存</b> 按钮下载备份文件，下次打开时点击 <b>📥 导入</b> 恢复数据。';
+  } else {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(200,235,200,0.95)';
+    notice.style.color = '#2E7D32';
+    notice.style.border = '1px solid #A5D6A7';
+    notice.innerHTML = '✅ 当前为网络模式，数据会自动保存，无需手动操作。';
+    // 3秒后自动隐藏
+    setTimeout(function() { notice.style.display = 'none'; }, 4000);
+  }
+}
+
+function saveAll() {
+  sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
+  sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
+  sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
+  sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
+  sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
+  sSet('taotao_v5_points', JSON.stringify(totalPoints));
+  sSet('taotao_v5_draws', JSON.stringify(drawsAvailable));
+  // 保存抽卡网格状态（只存cardId，不存整个对象）
+  let gridSave = drawGridCards.map(s => ({ cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }));
+  sSet('taotao_v5_draw_grid', JSON.stringify(gridSave));
+  sSet('taotao_v5_draw_history', JSON.stringify(drawHistory));
+  sSet('taotao_v5_collection', JSON.stringify(collection));
+  sSet('taotao_v5_wishes', JSON.stringify(wishes));
+  sSet('taotao_v5_wish_energy', JSON.stringify(wishEnergy));
+  sSet('taotao_v5_claimed', JSON.stringify(claimHistory));
+  sSet('taotao_v5_aiY', JSON.stringify(aiFloatY));
+}
+
+function loadAll() {
+  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
+  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
+  try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
+  try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
+  try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
+  try { totalPoints=JSON.parse(sGet('taotao_v5_points'))||0; } catch(e){}
+  try { drawsAvailable=JSON.parse(sGet('taotao_v5_draws'))||0; } catch(e){}
+  // 加载抽卡网格状态
+  try {
+    let gridSave = JSON.parse(sGet('taotao_v5_draw_grid'));
+    if (gridSave && gridSave.length === 6) {
+      drawGridCards = gridSave.map(s => ({
+        card: s.cardId ? CARD_POOL.find(c => c.id === s.cardId) || null : null,
+        flipped: s.flipped,
+        animating: s.animating
+      }));
+    }
+  } catch(e){}
+  try { drawHistory=JSON.parse(sGet('taotao_v5_draw_history'))||[]; } catch(e){}
+  try { collection=JSON.parse(sGet('taotao_v5_collection'))||{}; } catch(e){}
+  try { wishes=JSON.parse(sGet('taotao_v5_wishes'))||[...DEFAULT_WISHES]; } catch(e){}
+  try { wishEnergy=JSON.parse(sGet('taotao_v5_wish_energy'))||0; } catch(e){}
+  try { claimHistory=JSON.parse(sGet('taotao_v5_claimed'))||{}; } catch(e){}
+  try { aiFloatY=JSON.parse(sGet('taotao_v5_aiY')); } catch(e){}
+  migrateData();
+}
+
+function migrateData() {
+  const DATA_VERSION = 4;
+  let ver = 0;
+  try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
+  if (ver >= DATA_VERSION) return;
+
+  // 内置每日任务 points 强制设为 10
+  // 内置周任务 points 强制设为 50
+  let changed = false;
+  const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
+  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
+  for (let t of dailyTasks) {
+    if (DAILY_BUILTIN_IDS.includes(t.id) && t.points !== 100) { t.points = 100; changed = true; }
+  }
+  for (let t of weeklyTasks) {
+    if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
+  }
+  if (changed) {
+    sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
+    sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
+  }
+  sSet('taotao_v5_data_ver', JSON.stringify(DATA_VERSION));
+}
+
+// ============ UTILS ============
+function dateKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function weekKey(d) { let m=new Date(d); let day=m.getDay(); let diff=m.getDate()-day+(day===0?-6:1); m.setDate(diff); return dateKey(m); }
+function todayKey() { return dateKey(new Date()); }
+function generateId() { return 't_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
+function calcTodayPoints() {
+  let dk=dateKey(currentDate); let pts=0;
+  let checkins=dailyCheckins[dk]||{};
+  for(let t of dailyTasks) { if(checkins[t.id]===1) pts+=(t.points||100); }
+  let wk=weekKey(currentDate); let wc=weeklyCheckins[wk]||{};
+  for(let t of weeklyTasks) { pts+=(wc[t.id]||0)*(t.points||200); }
+  let pk=pkCheckins[dk]||{}; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let s=PK_SCHEDULE[wd]||[];
+  for(let i=0;i<s.length;i++) { if(pk[i]===1) pts+=1000; }
+  let allDone=dailyTasks.length>0&&dailyTasks.every(t=>checkins[t.id]===1);
+  if(allDone) pts+=500;
+  return pts;
+}
+function calcStreak() { let d=new Date(); let streak=0; while(true) { let dk=dateKey(d); let c=dailyCheckins[dk]||{}; if(!Object.values(c).some(v=>v===1)) break; streak++; d=new Date(d.getTime()-86400000); } return streak; }
+function countAllDoneDays() { let count=0; let dk=dateKey(currentDate); for(let i=0;i<30;i++) { let d=new Date(currentDate.getTime()-i*86400000); let k=dateKey(d); let c=dailyCheckins[k]||{}; if(dailyTasks.length>0&&dailyTasks.every(t=>c[t.id]===1)) count++; } return count; }
+
+// ============ AUDIO ============
+let audioCtx=null;
+function getAudioCtx() { if(!audioCtx) { try { audioCtx=new(window.AudioContext||window.webkitAudioContext)(); } catch(e){} } return audioCtx; }
+function playPop() { let ctx=getAudioCtx(); if(!ctx) return; if(ctx.state==='suspended') ctx.resume(); let o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.type='sine'; o.frequency.setValueAtTime(600,ctx.currentTime); o.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.04); o.frequency.exponentialRampToValueAtTime(300,ctx.currentTime+0.1); g.gain.setValueAtTime(0.3,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25); o.start(ctx.currentTime); o.stop(ctx.currentTime+0.25); }
+function playCelebrateSound() { let ctx=getAudioCtx(); if(!ctx) return; if(ctx.state==='suspended') ctx.resume(); let notes=[523,659,784,1047]; for(let i=0;i<notes.length;i++) { let o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.type='sine'; let t=ctx.currentTime+i*0.12; o.frequency.setValueAtTime(notes[i],t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.4); o.start(t); o.stop(t+0.4); } }
+
+// ============ PARTICLES & CELEBRATION ============
+function spawnParticles(el) { let rect=el.getBoundingClientRect(); let cx=rect.left+rect.width/2,cy=rect.top+rect.height/2; let count=50; for(let i=0;i<count;i++) { let p=document.createElement('div'); p.style.cssText=['position:fixed;border-radius:50%;pointer-events:none;z-index:500','left:'+cx+'px;top:'+cy+'px','width:'+(Math.random()*8+4)+'px;height:'+(Math.random()*8+4)+'px','background:'+PARTICLE_COLORS[Math.floor(Math.random()*PARTICLE_COLORS.length)],'animation:particleFly '+(Math.random()*0.4+0.6)+'s ease-out forwards'].join(';'); let angle=Math.random()*Math.PI*2,dist=Math.random()*180+30; p.style.setProperty('--tx',Math.cos(angle)*dist+'px'); p.style.setProperty('--ty',Math.sin(angle)*dist+'px'); document.body.appendChild(p); setTimeout(()=>p.remove(),1200); } }
+function showCelebration(msg) { let el=document.getElementById('celebration'); let text=document.getElementById('celebrationText'); if(!el||!text) return; text.innerHTML=msg.replace(/\n/g,'<br>'); playCelebrateSound(); let colors=PARTICLE_COLORS; for(let i=0;i<40;i++) { let c=document.createElement('div'); c.className='confetti'; c.style.cssText=['left:'+Math.random()*100+'%','background:'+colors[Math.floor(Math.random()*colors.length)],'animation-duration:'+(Math.random()*2+2)+'s','animation-delay:'+(Math.random()*1.5)+'s','width:'+(Math.random()*8+5)+'px','height:'+(Math.random()*8+5)+'px','border-radius:'+(Math.random()>0.5?'50%':'3px')].join(';'); el.appendChild(c); setTimeout(()=>c.remove(),4000); } setTimeout(()=>text.innerHTML='',3500); }
+function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2300); }
+
+// ============ RENDER DAILY ============
+function renderDaily() { let c=document.getElementById('dailyCard'); if(!c) return; let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let h=''; for(let i=0;i<dailyTasks.length;i++) { let t=dailyTasks[i]; let done=ci[t.id]===1; h+='<div class="task-item'+(done?' done':'')+'" data-tid="'+t.id+'"><span class="emoji">'+t.emoji+'</span><span class="label">'+t.label+'</span><button class="task-del" data-tid="'+t.id+'" title="删除">✕</button><div class="check">'+(done?'✓':'')+'<span class="pts">+'+(t.points||100)+'能量</span></div></div>'; } c.innerHTML=h; c.querySelectorAll('.task-item').forEach(el=>{ el.addEventListener('click',function(e){ if(e.target.classList.contains('task-del')) return; toggleDailyTask(this.dataset.tid,this); }); }); c.querySelectorAll('.task-del').forEach(btn=>{ btn.addEventListener('click',function(e){ e.stopPropagation(); deleteDailyTask(this.dataset.tid); }); }); }
+function toggleDailyTask(tid,el) { let dk=dateKey(currentDate); if(!dailyCheckins[dk]) dailyCheckins[dk]={}; let cur=dailyCheckins[dk][tid]||0; if(cur===1) { dailyCheckins[dk][tid]=0; recalcPoints(); } else { dailyCheckins[dk][tid]=1; let t=dailyTasks.find(x=>x.id===tid); let pts=t?(t.points||100):100; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(el) { el.classList.remove('task-done-anim'); void el.offsetWidth; el.classList.add('task-done-anim'); spawnParticles(el); setTimeout(()=>el.classList.remove('task-done-anim'),800); } } saveAll(); renderDaily(); renderPointsBar(); checkDailyCelebration(); updateAIBadge(); }
+function deleteDailyTask(tid) { let t=dailyTasks.find(x=>x.id===tid); if(!t) return; if(t.builtin) { showToast('内置任务不能删除哦～'); return; } dailyTasks=dailyTasks.filter(x=>x.id!==tid); saveAll(); renderDaily(); recalcPoints(); renderPointsBar(); }
+function checkDailyCelebration() { let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let allDone=dailyTasks.length>0&&dailyTasks.every(t=>ci[t.id]===1); if(allDone) { totalPoints+=500; saveAll(); let msg=ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)]; showCelebration('🎊 全部完成！+500 能量 🎊\n\n'+msg); } }
+
+// ============ RENDER WEEKLY ============
+function renderWeekly() { let c=document.getElementById('weeklyCard'); if(!c) return; let wk=weekKey(currentDate); let data=weeklyCheckins[wk]||{}; let h=''; for(let i=0;i<weeklyTasks.length;i++) { let t=weeklyTasks[i]; let cur=data[t.id]||0; let pct=Math.min(100,Math.round((cur/t.target)*100)); let fc=cur>=t.target?'done':cur>0?'in-progress':'empty'; let dm=cur>=t.target?' ✅':''; let db=!t.builtin?'<button class="weekly-del" onclick="deleteWeeklyTask(\''+t.id+'\')">✕</button>':''; h+='<div class="weekly-item"><div class="wlabel"><span>'+t.emoji+' '+t.label+db+'</span><span class="'+(cur>=t.target?'wlabel-done':'')+'">'+cur+'/'+t.target+t.unit+dm+'</span></div><div class="progress-bg"><div class="progress-fill '+fc+'" style="width:'+pct+'%"></div></div><div class="pct-label">'+(t.points||200)+'能量/次 · '+pct+'%</div><div class="weekly-btns"><button onclick="weeklyChange(\''+t.id+'\',-1)">➖</button><button onclick="weeklyChange(\''+t.id+'\',1)">➕</button></div></div>'; } c.innerHTML=h; }
+function deleteWeeklyTask(tid) { let t=weeklyTasks.find(x=>x.id===tid); if(!t||t.builtin) return; weeklyTasks=weeklyTasks.filter(x=>x.id!==tid); saveAll(); renderWeekly(); recalcPoints(); renderPointsBar(); }
+function weeklyChange(tid,delta) { let wk=weekKey(currentDate); if(!weeklyCheckins[wk]) weeklyCheckins[wk]={}; let cur=weeklyCheckins[wk][tid]||0; let next=cur+delta; if(next<0) return; weeklyCheckins[wk][tid]=next; if(delta>0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(next>=(t?t.target:1)) { let idx=weeklyTasks.findIndex(x=>x.id===tid); let el=document.querySelector('#weeklyCard .weekly-item:nth-child('+(idx+1)+')'); if(el) spawnParticles(el); } } else if(delta<0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints=Math.max(0,totalPoints-pts); } saveAll(); renderWeekly(); renderPointsBar(); updateAIBadge(); }
+
+// ============ RENDER PK ============
+function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let evts=PK_SCHEDULE[day]; let isCur=day===wd; let dci=isCur?tp:{}; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<evts.length;i++) { let e=evts[i]; let done=isCur&&dci[i]===1; h+='<div class="pk-event"><span class="pk-time">'+e.time+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'+(isCur?'<button class="pk-check-btn'+(done?' done':'')+'" onclick="togglePK('+i+')">'+(done?'✓':'')+'</button>':(dci[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':''))+'</div>'; } h+='</div>'; } c.innerHTML=h; }
+function togglePK(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的PK哦～'); return; } if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
+
+// ============ RENDER POINTS BAR ============
+function renderPointsBar() { let tp=document.getElementById('todayPoints'); let totalp=document.getElementById('totalPoints'); let sd=document.getElementById('streakDays'); if(tp) tp.innerHTML='⚡ '+calcTodayPoints(); if(totalp) totalp.innerHTML='⚡ '+totalPoints; if(sd) sd.innerHTML='🔥 '+calcStreak()+'天'; }
+function recalcPoints() { saveAll(); }
+
+// ============ RENDER DATE ============
+function renderDate() { let d=currentDate; let dk=dateKey(d); let tdk=todayKey(); let label; if(dk===tdk) label='今天'; else if(dk===dateKey(new Date(new Date().getTime()-86400000))) label='昨天'; else if(dk===dateKey(new Date(new Date().getTime()+86400000))) label='明天'; else label=(d.getMonth()+1)+'月'+d.getDate()+'日'; document.getElementById('dateDisplay').textContent=label+' '+WEEKDAY_NAMES[d.getDay()]; document.getElementById('headerTip').textContent=dk===tdk?'今天也要加油哦～':'回顾打卡情况'; }
+
+// ============ RENDER ALL ============
+let currentTab='daily';
+
+function spawnLeaves(tabId) {
+  document.querySelectorAll('.leaves-area').forEach(a => a.innerHTML = '');
+  const el = document.getElementById(tabId);
+  if (!el) return;
+  const area = el.querySelector('.leaves-area');
+  if (!area) return;
+
+  const leafEmojis = ['🍃', '🌿', '🍂', '🌱', '🍁'];
+  const count = 12;
+  const baseDuration = 11;
+
+  for (let i = 0; i < count; i++) {
+    const leaf = document.createElement('span');
+    leaf.className = 'falling-leaf';
+    leaf.textContent = leafEmojis[i % leafEmojis.length];
+    leaf.style.left = (Math.random() * 84 + 5) + '%';
+    leaf.style.fontSize = (0.9 + Math.random() * 1.0) + 'rem';
+    leaf.style.animationDuration = (baseDuration + (Math.random() - 0.5) * 4) + 's';
+    leaf.style.animationDelay = (Math.random() * baseDuration) + 's';
+    area.appendChild(leaf);
+  }
+}
+function renderAll() { renderDate(); renderPointsBar(); renderDaily(); renderWeekly(); renderPK(); if(currentTab==='quanyi') { renderQuanyi(); } updateAIBadge(); }
+function switchTab(name) { currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.reset-btn-wrapper').forEach(w=>w.classList.remove('active')); let tm={daily:0,weekly:1,pk:2,quanyi:3}; let tabs=document.querySelectorAll('.tab'); if(tabs[tm[name]]) tabs[tm[name]].classList.add('active'); let el=document.getElementById('tab-'+name); if(el) el.classList.add('active'); let rw=document.getElementById('reset-wrapper-'+name); if(rw) rw.classList.add('active'); if(name==='quanyi') renderQuanyi(); spawnLeaves('tab-'+name); }
+
+// ============ 权益卡子页切换 ============
+function switchQuanyiPage(page) {
+  currentQuanyiPage = page;
+  document.querySelectorAll('.quanyi-subtab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.quanyi-page').forEach(p => p.classList.remove('active'));
+
+  // wish-detail 是详情页，不需要激活 sub-tab
+  if (page !== 'wish-detail') {
+    let pageMap = { draw: 0, wish: 1, growth: 2, center: 3, convert: 4 };
+    let subtabs = document.querySelectorAll('.quanyi-subtab');
+    if (subtabs[pageMap[page]]) subtabs[pageMap[page]].classList.add('active');
+  }
+
+  let el = document.getElementById('qy-' + page);
+  if (el) el.classList.add('active');
+
+  switch (page) {
+    case 'draw': renderDrawPage(); break;
+    case 'wish': renderWishPage(); break;
+    case 'growth': renderGrowthPage(); break;
+    case 'center': renderCenterPage(); break;
+    case 'wish-detail': if (currentWishPlanet) renderWishDetailPage(currentWishPlanet); break;
+    case 'convert': renderConvertPage(); break;
+  }
+}
+
+// ============ 渲染权益卡整体（进入tab时） ============
+function renderQuanyi() {
+  switchQuanyiPage(currentQuanyiPage);
+}
+
+// ============ 抽卡页 (6张牌网格) ============
+let drawGridCards = []; // 当前6张牌 [{card, flipped, animating}]
+
+function renderDrawPage() {
+  document.getElementById('drawTabPoints').textContent = totalPoints;
+  document.getElementById('drawTabChances').textContent = drawsAvailable;
+  let btn = document.getElementById('btnExchangeDraw');
+  if (totalPoints < 1500) { btn.disabled = true; btn.textContent = '能量不足（需要1500能量）'; }
+  else { btn.disabled = false; btn.textContent = '消耗1500能量兑换1次抽卡'; }
+
+  // 只在首次进入时初始化6张牌，之后保持状态
+  if (drawGridCards.length === 0) {
+    initDrawGrid();
+  } else {
+    renderDrawGrid(); // 保持现有牌面状态，只重新渲染
+  }
+}
+
+function exchangeDrawFromTab() {
+  if (totalPoints < 1500) { showToast('能量不足！需要1500能量'); return; }
+  totalPoints -= 1500;
+  drawsAvailable += 1;
+  saveAll();
+  renderPointsBar();
+  renderDrawPage();
+  showToast('消耗1500能量，获得1次抽卡机会！🎴');
+}
+
+// 初始化6张随机牌（背面朝上）
+function initDrawGrid() {
+  drawGridCards = [];
+  for (let i = 0; i < 6; i++) {
+    drawGridCards.push({ card: null, flipped: false, animating: false });
+  }
+  renderDrawGrid();
+}
+
+// 渲染6张牌到网格（每张牌始终有两面：正面橙色+背面内容）
+function renderDrawGrid() {
+  let grid = document.getElementById('drawCardsGrid');
+  if (!grid) return;
+  let bgMap = {
+    'card-g-ssr': 'linear-gradient(145deg, #FF1744, #D50000, #B71C1C)',
+    'card-g-sr':  'linear-gradient(145deg, #2979FF, #1565C0, #0D47A1)',
+    'card-g-r':   'linear-gradient(145deg, #FFAB91, #FF8A65, #E64A19)',
+    'card-g-limited': 'linear-gradient(145deg, #FFD700, #FFA500, #FF8C00)'
+  };
+  let rarityStars = { 'SSR': '⭐⭐⭐', 'SR': '⭐⭐', 'R': '⭐', '限定': '🌟🌟🌟' };
+  let rarityLabels = { 'SSR': '传说级', 'SR': '稀有级', 'R': '普通级', '限定': '限定·凹凸世界' };
+
+  grid.innerHTML = drawGridCards.map((slot, idx) => {
+    let cardClass = 'draw-card' + (slot.flipped ? ' flipped' : '') + (slot.animating ? ' flipping' : '');
+    // 每张牌始终有两面
+    let frontFace = '<div class="draw-card-face draw-card-front" onclick="flipDrawCard(' + idx + ')">' +
+      '<div class="draw-icon">🎴</div>' +
+      '<div class="draw-text">点击翻牌</div>' +
+      '<div class="draw-sub">剩余' + drawsAvailable + '次</div>' +
+    '</div>';
+    // 背面内容：已翻牌显示卡片，未翻牌显示占位
+    let backContent = '';
+    if (slot.card && slot.flipped) {
+      let c = slot.card;
+      backContent = '<div class="card-stars-back">' + (rarityStars[c.rarity]||'⭐') + '</div>' +
+        '<div class="card-emoji">' + c.emoji + '</div>' +
+        '<div class="card-name">' + c.name + '</div>' +
+        '<div class="card-rarity-tag">' + c.rarity + ' · ' + (rarityLabels[c.rarity]||'') + '</div>' +
+        '<div class="card-desc">' + c.desc + '</div>' +
+        '<div class="card-energy-prairie">⚡ ' + c.energy.toLocaleString() + ' 能量</div>';
+    } else {
+      backContent = '<div class="card-emoji">🎴</div>' +
+        '<div class="card-name">权益卡</div>' +
+        '<div class="card-rarity-tag">点击翻牌</div>';
+    }
+    let backBg = (slot.card && slot.flipped) ? (bgMap[slot.card.cls]||'#666') : 'linear-gradient(135deg,#9C27B0,#7B1FA2)';
+    let backFace = '<div class="draw-card-face draw-card-back" style="background:' + backBg + ';">' +
+      backContent +
+    '</div>';
+
+    return '<div class="draw-card-cell">' +
+      '<div class="' + cardClass + '" id="drawCard_' + idx + '">' +
+        frontFace + backFace +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// 翻牌
+function flipDrawCard(idx) {
+  if (drawGridCards[idx].flipped) return;
+  if (drawGridCards[idx].animating) return;
+  if (drawsAvailable <= 0) { showToast('没有抽卡次数了！先兑换吧～'); return; }
+
+  drawsAvailable--;
+  saveAll();
+  renderDrawPage();
+
+  // 按权重抽卡（R1/R2 概率最高）
+  let reward = weightedDrawCard();
+  drawHistory.push({ emoji: reward.emoji, name: reward.name, desc: reward.desc, time: Date.now(), cardId: reward.id, rarity: reward.rarity });
+
+  // 自动存入你的中心
+  collection[reward.id] = (collection[reward.id] || 0) + 1;
+  saveAll();
+
+  // 翻牌动画
+  drawGridCards[idx].card = reward;
+  drawGridCards[idx].flipped = true;
+  drawGridCards[idx].animating = true;
+  renderDrawGrid();
+
+  playCelebrateSound();
+  let rarityEmoji = { 'SSR': '🔴', 'SR': '🔵', 'R': '🟡', '限定': '🌟' };
+  showToast((rarityEmoji[reward.rarity]||'⭐') + ' 恭喜抽到：' + reward.name + '！已存入你的中心');
+
+  renderPointsBar();
+
+  // 2秒后自动换一张新牌（背面朝上）
+  setTimeout(function() {
+    drawGridCards[idx].animating = false;
+    drawGridCards[idx].flipped = false;
+    drawGridCards[idx].card = null;
+    renderDrawGrid();
+    saveAll(); // 保存换新牌后的状态
+  }, 2000);
+}
+
+// ============ 许愿星球 ============
+let currentWishPlanet = null; // 当前进入的星球
+
+function renderWishPage() {
+  // 如果正在查看某个星球的详情，刷新能量条
+  if (currentWishPlanet) {
+    renderWishDetailPage(currentWishPlanet);
+  }
+}
+
+function enterWishPlanet(planet) {
+  currentWishPlanet = planet;
+  switchQuanyiPage('wish-detail');
+}
+
+function exitWishPlanet() {
+  currentWishPlanet = null;
+  switchQuanyiPage('wish');
+}
+
+function renderWishDetailPage(planet) {
+  const planetInfo = {
+    R:  { icon: '🪐', title: 'R星球', subtitle: '普通卡牌 · 初级许愿', cost: 5000,  cls: 'planet-r' },
+    SR: { icon: '🌍', title: 'SR星球', subtitle: '稀有卡牌 · 中级许愿', cost: 20000, cls: 'planet-sr' },
+    SSR: { icon: '⭐', title: 'SSR星球', subtitle: '传说卡牌 · 高级许愿', cost: 40000, cls: 'planet-ssr' },
+  };
+  const info = planetInfo[planet];
+  document.getElementById('wishDetailIcon').textContent = info.icon;
+  document.getElementById('wishDetailTitle').textContent = info.title;
+  document.getElementById('wishDetailSubtitle').textContent = info.subtitle;
+  document.getElementById('wishDetailCost').textContent = '⚡ 每次许愿消耗 ' + info.cost.toLocaleString() + ' 能量';
+  document.getElementById('wishCostSpan').textContent = info.cost.toLocaleString();
+  document.getElementById('wishCurrentEnergy').textContent = totalPoints;
+
+  // 能量进度条
+  const pct = Math.min(100, Math.round(totalPoints / info.cost * 100));
+  document.getElementById('wishEnergyFill').style.width = pct + '%';
+
+  // 许愿按钮
+  const btn = document.getElementById('btnDoWish');
+  if (totalPoints < info.cost) {
+    btn.disabled = true;
+    btn.textContent = '⚡ 能量不足（需要' + info.cost.toLocaleString() + '）';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '🌟 许愿！（消耗' + info.cost.toLocaleString() + '能量）';
+  }
+
+  // 卡片背景
+  const card = document.getElementById('wishDetailCard');
+  card.className = 'wish-detail-card';
+  if (planet === 'R') card.classList.add('planet-r');
+  if (planet === 'SR') card.classList.add('planet-sr');
+  if (planet === 'SSR') card.classList.add('planet-ssr');
+
+  // 渲染奖项说明
+  renderWishPrizes(planet);
+}
+
+function renderWishPrizes(planet) {
+  const prizeData = {
+    R: [
+      { label: '一等奖（最难）', cards: [{id:'r5',count:5}], pct: 5 },
+      { label: '二等奖', cards: [{id:'r1',count:1},{id:'r2',count:1},{id:'r3',count:1},{id:'r4',count:1},{id:'r5',count:1}], pct: 10 },
+      { label: '三等奖', cards: [{id:'r1',count:3},{id:'r3',count:1},{id:'r5',count:1}], pct: 20 },
+      { label: '四等奖', cards: [{id:'r2',count:4},{id:'r3',count:1}], pct: 25 },
+      { label: '五等奖（最容易）', cards: [{id:'r1',count:5}], pct: 40 },
+    ],
+    SR: [
+      { label: '一等奖（最难）', cards: [{id:'sr5',count:5}], pct: 5 },
+      { label: '二等奖', cards: [{id:'sr1',count:1},{id:'sr2',count:1},{id:'sr3',count:1},{id:'sr4',count:1},{id:'sr5',count:1}], pct: 10 },
+      { label: '三等奖', cards: [{id:'limited_anmixiu',count:1},{id:'r5',count:3},{id:'sr3',count:1}], pct: 15 },
+      { label: '四等奖', cards: [{id:'limited_leishi',count:5}], pct: 25 },
+      { label: '五等奖（最容易）', cards: [{id:'r1',count:1},{id:'r5',count:1},{id:'limited_jiadeluosi',count:1},{id:'limited_gerui',count:1},{id:'limited_anmixiu',count:1}], pct: 45 },
+    ],
+    SSR: [
+      { label: '一等奖（最难）', cards: [{id:'sr5',count:3},{id:'ssr5',count:1},{id:'limited_jin',count:1}], pct: 3 },
+      { label: '二等奖', cards: [{id:'ssr5',count:5}], pct: 7 },
+      { label: '三等奖', cards: [{id:'r1',count:1},{id:'sr1',count:1},{id:'ssr1',count:1}], pct: 15 },
+      { label: '四等奖', cards: [{id:'sr1',count:4},{id:'ssr2',count:1}], pct: 25 },
+      { label: '五等奖（最容易）', cards: [{id:'sr2',count:4},{id:'ssr3',count:1}], pct: 50 },
+    ],
+  };
+  const bgMap = {
+    'card-g-ssr': 'linear-gradient(135deg,#FF1744,#B71C1C)',
+    'card-g-sr':  'linear-gradient(135deg,#2979FF,#0D47A1)',
+    'card-g-r':   'linear-gradient(135deg,#FFAB91,#E64A19)',
+    'card-g-limited': 'linear-gradient(145deg,#FFD700,#FFA500)',
+  };
+  const list = prizeData[planet] || [];
+  let html = '';
+  for (const p of list) {
+    html += '<div class="wish-prize-section"><div class="wish-prize-title">' + p.label + '（概率' + p.pct + '%）</div><div class="wish-prize-cards">';
+    for (const entry of p.cards) {
+      const card = CARD_POOL.find(c => c.id === entry.id);
+      if (card) {
+        html += '<span class="wish-prize-card" style="background:' + (bgMap[card.cls]||'#888') + ';">' + card.emoji + ' ' + card.name + (entry.count>1 ? '×' + entry.count : '') + '</span>';
+      }
+    }
+    html += '</div></div>';
+  }
+  document.getElementById('wishPrizes').innerHTML = html;
+}
+
+function confirmWish() {
+  if (!currentWishPlanet) return;
+  const cost = WISH_COSTS[currentWishPlanet];
+  if (totalPoints < cost) { showToast('能量不足！'); return; }
+  showWishConfirmModal(currentWishPlanet, cost);
+}
+
+function showWishConfirmModal(planet, cost) {
+  const modal = document.getElementById('wishConfirmModal');
+  if (!modal) {
+    // 动态创建确认弹窗
+    const div = document.createElement('div');
+    div.id = 'wishConfirmModal';
+    div.className = 'modal-overlay';
+    div.innerHTML = '<div class="modal-box">' +
+      '<div class="modal-title">🌟 确认许愿</div>' +
+      '<div class="modal-text">消耗 <b>' + cost.toLocaleString() + '</b> 能量进行许愿？<br><br>' +
+      '<span style="font-size:0.78rem;color:#888;">（点"取消"可保留能量，下次再来许愿）</span></div>' +
+      '<div class="modal-btns">' +
+        '<button class="btn-cancel" onclick="closeWishConfirm()">取消</button>' +
+        '<button class="btn-confirm" onclick="executeWish()">确定许愿</button>' +
+      '</div></div>';
+    document.body.appendChild(div);
+  } else {
+    modal.querySelector('.modal-text').innerHTML = '消耗 <b>' + cost.toLocaleString() + '</b> 能量进行许愿？<br><br>' +
+      '<span style="font-size:0.78rem;color:#888;">（点"取消"可保留能量，下次再来许愿）</span>';
+    modal.classList.remove('hidden');
+  }
+}
+function closeWishConfirm() {
+  const modal = document.getElementById('wishConfirmModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// ============ 许愿星球 - 许愿逻辑 ============
+const WISH_COSTS = { R: 5000, SR: 20000, SSR: 40000 };
+
+const WISH_POOLS = {
+  // R星球：一等奖最难(1%), 五等奖最易(50%)
+  R: {
+    levels: [
+      { label: '一等奖', pct: 1,  cards: [{id:'r5',count:5}] },
+      { label: '二等奖', pct: 4,  cards: [{id:'r1',count:1},{id:'r2',count:1},{id:'r3',count:1},{id:'r4',count:1},{id:'r5',count:1}] },
+      { label: '三等奖', pct: 15, cards: [{id:'r1',count:3},{id:'r3',count:1},{id:'r5',count:1}] },
+      { label: '四等奖', pct: 30, cards: [{id:'r2',count:4},{id:'r3',count:1}] },
+      { label: '五等奖', pct: 50, cards: [{id:'r1',count:5}] },
+    ]
+  },
+  // SR星球
+  SR: {
+    levels: [
+      { label: '一等奖', pct: 1,  cards: [{id:'sr5',count:5}] },
+      { label: '二等奖', pct: 4,  cards: [{id:'sr1',count:1},{id:'sr2',count:1},{id:'sr3',count:1},{id:'sr4',count:1},{id:'sr5',count:1}] },
+      { label: '三等奖', pct: 15, cards: [{id:'limited_anmixiu',count:1},{id:'r5',count:3},{id:'sr3',count:1}] },
+      { label: '四等奖', pct: 30, cards: [{id:'limited_leishi',count:5}] },
+      { label: '五等奖', pct: 50, cards: [{id:'r1',count:1},{id:'r5',count:1},{id:'limited_jiadeluosi',count:1},{id:'limited_gerui',count:1},{id:'limited_anmixiu',count:1}] },
+    ]
+  },
+  // SSR星球
+  SSR: {
+    levels: [
+      { label: '一等奖', pct: 1,  cards: [{id:'sr5',count:3},{id:'ssr5',count:1},{id:'limited_jin',count:1}] },
+      { label: '二等奖', pct: 4,  cards: [{id:'ssr5',count:5}] },
+      { label: '三等奖', pct: 15, cards: [{id:'r1',count:1},{id:'sr1',count:1},{id:'ssr1',count:1}] },
+      { label: '四等奖', pct: 30, cards: [{id:'sr1',count:4},{id:'ssr2',count:1}] },
+      { label: '五等奖', pct: 50, cards: [{id:'sr2',count:4},{id:'ssr3',count:1}] },
+    ]
+  }
+};
+
+function executeWish() {
+  if (!currentWishPlanet) return;
+  const planet = currentWishPlanet;
+  const cost = WISH_COSTS[planet];
+  if (totalPoints < cost) { showToast('能量不足！'); return; }
+  totalPoints -= cost;
+  saveAll();
+
+  // 按 pct 概率选奖项
+  const levels = WISH_POOLS[planet].levels;
+  const totalPct = levels.reduce((s, l) => s + l.pct, 0);
+  let rand = Math.random() * totalPct;
+  let levelIdx = levels.length - 1;
+  for (let i = 0; i < levels.length; i++) {
+    rand -= levels[i].pct;
+    if (rand <= 0) { levelIdx = i; break; }
+  }
+
+  const level = levels[levelIdx];
+  const planetNames = { R: 'R星球', SR: 'SR星球', SSR: 'SSR星球' };
+  const planetEmojis = { R: '🪐', SR: '🌍', SSR: '⭐' };
+  const levelLabels = { 0: '⭐', 1: '⭐⭐', 2: '⭐⭐⭐', 3: '⭐⭐⭐⭐', 4: '⭐⭐⭐⭐⭐' };
+
+  // 累加卡牌到 collection
+  const cardsObtained = [];
+  for (const entry of level.cards) {
+    const cardId = entry.id;
+    collection[cardId] = (collection[cardId] || 0) + (entry.count || 1);
+    const card = CARD_POOL.find(c => c.id === cardId);
+    if (card) cardsObtained.push({ card, count: entry.count || 1 });
+  }
+
+  saveAll();
+  renderPointsBar();
+  closeWishConfirm();
+  renderWishDetailPage(planet);
+
+  // 展示结果
+  const resultArea = document.getElementById('wishResultArea');
+  if (resultArea) {
+    resultArea.style.display = 'block';
+    const bgMap = {
+      'card-g-ssr': 'linear-gradient(135deg,#FF1744,#B71C1C)',
+      'card-g-sr':  'linear-gradient(135deg,#2979FF,#0D47A1)',
+      'card-g-r':   'linear-gradient(135deg,#FFAB91,#E64A19)',
+      'card-g-limited': 'linear-gradient(145deg,#FFD700,#FFA500)'
+    };
+    let html = '<div class="wish-result-level">' + planetEmojis[planet] + ' <b>' + planetNames[planet] + '</b> · ' + levelLabels[levelIdx] + ' 级 许愿成功！</div>';
+    html += '<div class="wish-result-cards">';
+    for (const item of cardsObtained) {
+      html += '<span class="wish-card-badge" style="background:' + (bgMap[item.card.cls] || '#666') + ';">' + item.card.emoji + ' ' + item.card.name + ' ×' + item.count + '</span>';
+    }
+    html += '</div>';
+    resultArea.innerHTML = html;
+    resultArea.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  playCelebrateSound();
+  showToast(planetEmojis[planet] + ' ' + planetNames[planet] + ' ' + levelLabels[levelIdx] + ' 许愿成功！');
+}
+
+
+
+
+// ============ 成长任务 + 兑换 ============
+function renderGrowthPage() {
+  // Growth tasks
+  let gtList = document.getElementById('growthTaskList');
+  if (gtList) {
+    gtList.innerHTML = GROWTH_TASKS.map(gt => {
+      let claimed = claimHistory[gt.claimedKey];
+      let canClaim = !claimed && gt.check();
+      let statusText = claimed ? '已领取 ✓' : canClaim ? '可领取' : '进行中...';
+      let btnClass = claimed ? 'done' : '';
+      return '<div class="growth-task-item">' +
+        '<div class="gt-icon">' + gt.icon + '</div>' +
+        '<div class="gt-info"><div class="gt-name">' + gt.name + '</div><div class="gt-reward">奖励：' + gt.reward + '</div></div>' +
+        '<button class="gt-btn ' + btnClass + '" ' + (canClaim ? 'onclick="claimGrowth(\'' + gt.id + '\')"' : '') + (claimed ? 'disabled' : '') + '>' + statusText + '</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Exchange buttons
+  let ex1 = document.getElementById('exDraw1');
+  let ex3 = document.getElementById('exDraw3');
+  let exW = document.getElementById('exWish');
+  if (ex1) { ex1.disabled = totalPoints < 1000; ex1.textContent = totalPoints < 1000 ? '能量不足' : '兑换'; }
+  if (ex3) { ex3.disabled = totalPoints < 3000; ex3.textContent = totalPoints < 3000 ? '能量不足' : '兑换'; }
+  if (exW) { exW.disabled = totalPoints < 5000; exW.textContent = totalPoints < 5000 ? '能量不足' : '兑换'; }
+}
+
+function claimGrowth(id) {
+  let gt = GROWTH_TASKS.find(g => g.id === id);
+  if (!gt || claimHistory[gt.claimedKey]) return;
+  claimHistory[gt.claimedKey] = true;
+
+  if (id === 'g1') drawsAvailable += 2;
+  else if (id === 'g2') drawsAvailable += 3;
+  else if (id === 'g3') wishEnergy += 20;
+  else if (id === 'g4') drawsAvailable += 1;
+  else if (id === 'g5') { totalPoints += 50000; }
+
+  saveAll();
+  renderGrowthPage();
+  renderDrawPage();
+  showToast('🎉 领取成功！' + gt.reward);
+}
+
+function exchangeItem(type) {
+  if (type === 'draw1') {
+    if (totalPoints < 1500) { showToast('能量不足！'); return; }
+    totalPoints -= 1500; drawsAvailable += 1;
+  } else if (type === 'draw3') {
+    if (totalPoints < 4000) { showToast('能量不足！'); return; }
+    totalPoints -= 4000; drawsAvailable += 3;
+  } else if (type === 'wish') {
+    if (totalPoints < 5000) { showToast('能量不足！'); return; }
+    totalPoints -= 5000; wishEnergy += 10;
+  }
+
+  // Apply wish energy to active wishes
+  if (wishEnergy >= 10 && type === 'wish') {
+    let activeWishes = wishes.filter(w => w.current < w.target);
+    if (activeWishes.length > 0) {
+      let w = activeWishes[0];
+      w.current = Math.min(w.target, w.current + 10);
+      wishEnergy -= 10;
+    }
+  }
+
+  saveAll();
+  renderPointsBar();
+  renderGrowthPage();
+  renderDrawPage();
+  renderWishPage();
+  showToast('兑换成功！✨');
+}
+
+// ============ 你的中心 ============
+function renderCenterPage() {
+  let owned = 0, srCount = 0, ssrCount = 0;
+  for (let c of CARD_POOL) {
+    let count = collection[c.id] || 0;
+    if (count > 0) {
+      owned++;
+      if (c.rarity === 'SR') srCount++;
+      if (c.rarity === 'SSR') ssrCount++;
+    }
+  }
+  document.getElementById('collOwned').textContent = owned;
+  document.getElementById('collRare').textContent = srCount;
+  document.getElementById('collLegend').textContent = ssrCount;
+  document.getElementById('collTotal').textContent = CARD_POOL.length;
+
+  let grid = document.getElementById('collectionGrid');
+  if (grid) {
+    grid.innerHTML = CARD_POOL.map(c => {
+      let count = collection[c.id] || 0;
+      if (count === 0) {
+        return '<div class="collection-card empty"><div class="cc-icon">❓</div><div class="cc-name">未收集</div><div style="font-size:0.6rem;opacity:0.5;">' + c.name + '</div></div>';
+      }
+      let bgMap = {
+        'card-g-ssr': 'linear-gradient(145deg, #FF1744, #D50000, #B71C1C)',
+        'card-g-sr':  'linear-gradient(145deg, #2979FF, #1565C0, #0D47A1)',
+        'card-g-r':   'linear-gradient(145deg, #FFAB91, #FF8A65, #E64A19)',
+        'card-g-limited': 'linear-gradient(145deg, #FFD700, #FFA500, #FF8C00)'
+      };
+      let rarityStars = { 'SSR': '⭐⭐⭐', 'SR': '⭐⭐', 'R': '⭐', '限定': '🌟🌟🌟' };
+      return '<div class="collection-card" style="background:' + (bgMap[c.cls] || '') + ';">' +
+        '<div class="cc-icon">' + c.emoji + '</div>' +
+        '<div class="cc-name">' + c.name + '</div>' +
+        '<div class="cc-count">×' + count + '</div>' +
+        '<div style="font-size:0.6rem;opacity:0.7;">' + rarityStars[c.rarity] + ' ' + c.rarity + ' · ⚡' + c.energy.toLocaleString() + '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+// ============ 转换能量页 ============
+function renderConvertPage() {
+  document.getElementById('convertCurrentEnergy').textContent = totalPoints;
+  let list = document.getElementById('convertCardList');
+  if (!list) return;
+  // 只显示已收集的卡片
+  let collected = CARD_POOL.filter(c => (collection[c.id] || 0) > 0);
+  if (collected.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-light);font-size:0.88rem;">暂无收藏的卡片<br>快去抽卡或许愿获得卡片吧～</div>';
+    return;
+  }
+  const bgMap = {
+    'card-g-ssr': 'linear-gradient(145deg, #FF1744, #D50000, #B71C1C)',
+    'card-g-sr':  'linear-gradient(145deg, #2979FF, #1565C0, #0D47A1)',
+    'card-g-r':   'linear-gradient(145deg, #FFAB91, #FF8A65, #E64A19)',
+    'card-g-limited': 'linear-gradient(145deg, #FFD700, #FFA500, #FF8C00)'
+  };
+  list.innerHTML = collected.map(c => {
+    let count = collection[c.id] || 0;
+    return '<div class="convert-card-item">' +
+      '<div class="convert-card-emoji">' + c.emoji + '</div>' +
+      '<div class="convert-card-info">' +
+        '<div class="convert-card-name">' + c.name + '</div>' +
+        '<div class="convert-card-energy">⚡ ' + c.energy.toLocaleString() + ' 能量/张</div>' +
+        '<div class="convert-card-count">已收集 ×' + count + '</div>' +
+      '</div>' +
+      '<button class="convert-card-btn" onclick="confirmConvert(\'' + c.id + '\')">转换 1 张</button>' +
+    '</div>';
+  }).join('');
+}
+function confirmConvert(cardId) {
+  const card = CARD_POOL.find(c => c.id === cardId);
+  if (!card) return;
+  if ((collection[cardId] || 0) <= 0) { showToast('没有可转换的卡片！'); return; }
+  // 动态创建确认弹窗
+  let modal = document.getElementById('convertConfirmModal');
+  if (!modal) {
+    const div = document.createElement('div');
+    div.id = 'convertConfirmModal';
+    div.className = 'modal-overlay';
+    div.innerHTML = '<div class="modal-box">' +
+      '<div class="modal-title">⚡ 确认转换</div>' +
+      '<div class="modal-text" id="convertConfirmText"></div>' +
+      '<div class="modal-btns">' +
+        '<button class="btn-cancel" id="convertConfirmCancel">取消</button>' +
+        '<button class="btn-confirm" id="convertConfirmOk">确定转换</button>' +
+      '</div></div>';
+    document.body.appendChild(div);
+    modal = div;
+  }
+  document.getElementById('convertConfirmText').innerHTML = '确定将 <b>' + card.emoji + ' ' + card.name + '</b> 转换为 <b>' + card.energy.toLocaleString() + '</b> 能量吗？<br><br><span style="font-size:0.78rem;color:#888;">转换后卡片将消失！</span>';
+  modal.classList.remove('hidden');
+  document.getElementById('convertConfirmOk').onclick = function() {
+    modal.classList.add('hidden');
+    doConvertCard(cardId);
+  };
+  document.getElementById('convertConfirmCancel').onclick = function() {
+    modal.classList.add('hidden');
+  };
+}
+function doConvertCard(cardId) {
+  const card = CARD_POOL.find(c => c.id === cardId);
+  if (!card) return;
+  collection[cardId] = (collection[cardId] || 0) - 1;
+  totalPoints += card.energy;
+  saveAll();
+  renderPointsBar();
+  renderConvertPage();
+  renderCenterPage();
+  showToast('⚡ 转换成功！获得 ' + card.energy.toLocaleString() + ' 能量');
+}
+
+// ============ MODAL ============
+function openAddTaskModal(type) {
+  let modal = document.getElementById('addTaskModal');
+  let weeklyRow = document.getElementById('weeklyTargetRow');
+  document.getElementById('modalTitle').textContent = '添加新任务';
+  document.getElementById('taskNameInput').value = '';
+  document.getElementById('taskPointsInput').value = type === 'weekly' ? '200' : '100';
+  document.getElementById('taskTargetInput').value = '1';
+  document.getElementById('taskUnitInput').value = '次';
+  weeklyRow.style.display = type === 'weekly' ? 'block' : 'none';
+  selectedEmoji = '📖';
+  renderEmojiGrid();
+  modal.classList.remove('hidden');
+}
+function renderEmojiGrid() {
+  let grid = document.getElementById('emojiGrid');
+  grid.innerHTML = EMOJI_OPTIONS.map(e => '<button class="emoji-option' + (e === selectedEmoji ? ' selected' : '') + '" onclick="selectEmoji(\'' + e + '\')">' + e + '</button>').join('');
+}
+function selectEmoji(e) { selectedEmoji = e; renderEmojiGrid(); }
+function closeModal() { document.getElementById('addTaskModal').classList.add('hidden'); }
+function confirmAddTask() {
+  let name = document.getElementById('taskNameInput').value.trim();
+  let isWeekly = document.getElementById('weeklyTargetRow').style.display !== 'none';
+  let points = parseInt(document.getElementById('taskPointsInput').value) || 100;
+  if (!name) { showToast('请输入任务名称'); return; }
+  if (!isWeekly) {
+    dailyTasks.push({ id: generateId(), label: name, emoji: selectedEmoji, points, builtin: false });
+  } else {
+    let target = parseInt(document.getElementById('taskTargetInput').value) || 1;
+    let unit = document.getElementById('taskUnitInput').value.trim() || '次';
+    weeklyTasks.push({ id: generateId(), label: name, emoji: selectedEmoji, target, unit, points, builtin: false });
+  }
+  saveAll(); closeModal();
+  renderDaily(); renderWeekly(); renderPointsBar();
+  showToast('任务已添加！✅');
+}
+
+// ============ FLOATING AI ============
+function setupAIFloat() {
+  let el = document.getElementById('aiFloat'); if (!el) return;
+  if (aiFloatY !== null && aiFloatY !== undefined) el.style.top = aiFloatY + 'px'; else el.style.top = '40%';
+  let startY, startTop, dragging = false;
+  el.addEventListener('pointerdown', function(e) { dragging = true; startY = e.clientY; startTop = el.getBoundingClientRect().top; el.classList.add('dragging'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', function(e) { if (!dragging) return; let dy = e.clientY - startY; let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy)); el.style.top = newTop + 'px'; aiFloatY = newTop; });
+  el.addEventListener('pointerup', function(e) { if (!dragging) return; dragging = false; el.classList.remove('dragging'); el.releasePointerCapture(e.pointerId); let dy = e.clientY - startY; if (Math.abs(dy) < 5) openAIChat(); saveAll(); });
+  el.addEventListener('pointercancel', function(e) { dragging = false; el.classList.remove('dragging'); });
+}
+function openAIChat() { document.getElementById('aiChatPanel').classList.remove('hidden'); document.getElementById('chatBackdrop').classList.remove('hidden'); document.getElementById('aiFloat').style.display = 'none'; generateAIWelcome(); setTimeout(() => document.getElementById('aiChatInput').focus(), 400); }
+function closeAIChat() { document.getElementById('aiChatPanel').classList.add('hidden'); document.getElementById('chatBackdrop').classList.add('hidden'); document.getElementById('aiFloat').style.display = 'flex'; }
+function updateAIBadge() { let badge = document.getElementById('aiBadge'); if (!badge) return; let dk = dateKey(currentDate); let ci = dailyCheckins[dk] || {}; let undone = dailyTasks.filter(t => ci[t.id] !== 1).length; badge.textContent = undone > 0 ? undone : '✓'; badge.style.background = undone > 0 ? '#E05555' : '#4A8C3F'; }
+function generateAIWelcome() { let dk = dateKey(currentDate); let ci = dailyCheckins[dk] || {}; let doneCount = dailyTasks.filter(t => ci[t.id] === 1).length; let totalCount = dailyTasks.length; let streak = calcStreak(); let msgs = document.getElementById('aiChatMsgs'); msgs.innerHTML = ''; let welcome; if (doneCount === totalCount && totalCount > 0) welcome = '🦞 咔嚓咔嚓！今天全部完成！你是学习冠军！'; else if (doneCount > 0) welcome = '🦞 已经完成 ' + doneCount + '/' + totalCount + ' 项，还有 ' + (totalCount - doneCount) + ' 项，继续加油！'; else welcome = '🦞 新的一天！从第一项任务开始吧～'; if (streak >= 3) welcome += '\n\n🔥 连续打卡 ' + streak + ' 天，超强自制力！'; addAIMsg(welcome, 'assistant'); }
+function addAIMsg(text, role) { let msgs = document.getElementById('aiChatMsgs'); let div = document.createElement('div'); div.className = 'ai-chat-msg ' + role; div.innerHTML = '<div class="bubble">' + text.replace(/\n/g, '<br>') + '</div>'; msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight; }
+function aiSend() { let input = document.getElementById('aiChatInput'); let text = input.value.trim(); if (!text) return; addAIMsg(text, 'user'); input.value = ''; setTimeout(() => { addAIMsg(generateAIReply(text), 'assistant'); }, 500 + Math.random() * 500); }
+function generateAIReply(q) { let dk = dateKey(currentDate); let ci = dailyCheckins[dk] || {}; let doneCount = dailyTasks.filter(t => ci[t.id] === 1).length; let undone = dailyTasks.filter(t => ci[t.id] !== 1); let streak = calcStreak(); q = q.toLowerCase();
+  if (q.includes('完成') || q.includes('进度') || q.includes('做了')) return '📊 今日进度：' + doneCount + '/' + dailyTasks.length + '\n已完成：' + dailyTasks.filter(t => ci[t.id] === 1).map(t => t.emoji + t.label).join('、') + '\n待完成：' + undone.map(t => t.emoji + t.label).join('、');
+  if (q.includes('鼓励') || q.includes('加油') || q.includes('累')) return '💪 ' + ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)] + '\n\n你已经连续打卡 ' + streak + ' 天了，每一天的努力都在让你变得更强！';
+  if (q.includes('技巧') || q.includes('方法') || q.includes('怎么学')) { let tips = ['📖 番茄工作法：学25分钟休息5分钟，效率超高！', '🧠 睡前复习：睡前30分钟复习，大脑会在睡眠中巩固记忆', '✏️ 费曼学习法：把学到的内容讲给别人听，讲不清的就是没懂的', '🎯 先难后易：精力最好的时候攻克最难的']; return '💡 ' + tips[Math.floor(Math.random() * tips.length)]; }
+  if (q.includes('能量') || q.includes('分数') || q.includes('多少分')) return '🏆 你目前累计 ' + totalPoints + ' 能量，今天获得 ' + calcTodayPoints() + ' 能量。\n还有 ' + drawsAvailable + ' 次抽卡机会！';
+  if (q.includes('抽卡') || q.includes('权益卡') || q.includes('卡片')) return '🎴 你还有 ' + drawsAvailable + ' 次抽卡机会！已有 ' + Object.keys(collection).filter(k => collection[k] > 0).length + ' 种权益卡。\n1500能量兑换1次，快去看看权益卡页面吧～';
+  if (q.includes('pk') || q.includes('课表') || q.includes('今晚')) { let wd = WEEKDAY_NAMES[currentDate.getDay()]; let sched = PK_SCHEDULE[wd] || []; if (sched.length === 0) return '今天没有PK安排，好好休息吧～'; return '⚔️ 今晚PK安排：\n' + sched.map(e => e.time + ' ' + e.subject).join('\n'); }
+  if (q.includes('许愿') || q.includes('愿望')) { let activeWishes = wishes.filter(w => w.current < w.target); if (activeWishes.length === 0) return '🌟 所有愿望都实现了吗？太厉害了！'; return '🌟 你还有 ' + activeWishes.length + ' 个愿望在进行中：\n' + activeWishes.slice(0, 3).map(w => w.icon + ' ' + w.name + ' (' + w.current + '/' + w.target + ')').join('\n'); }
+  if (q.includes('hello') || q.includes('你好') || q.includes('嗨')) return '你好韬韬！🦞 我是龙虾助手～咔嚓咔嚓！\n有什么需要帮忙的吗？';
+  let defaults = ['咔嚓！分析完毕。坚持就是胜利，继续加油韬韬！💪', '这是个好问题！龙虾建议你先专注完成今天的打卡任务哦～', '收到！🦞 每一天的努力都不会白费！', '明白了！龙虾助手会一直陪着你～有什么问题随时找我！'];
+  return defaults[Math.floor(Math.random() * defaults.length)]; }
+function aiQuick(type) { let q; switch (type) { case 'analyze': q = '今天进度怎么样'; break; case 'encourage': q = '给我点鼓励'; break; case 'tip': q = '有什么学习技巧'; break; case 'report': q = '我的能量'; break; default: q = '你好'; } addAIMsg(q, 'user'); setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); }, 500); }
+
+// ============ RESET ============
+function showResetConfirm() {
+  document.getElementById('resetConfirmModal').classList.remove('hidden');
+}
+function hideResetConfirm() {
+  document.getElementById('resetConfirmModal').classList.add('hidden');
+}
+function doResetAll() {
+  hideResetConfirm();
+
+  // 清除所有 localStorage 数据
+  const keys = [
+    'taotao_v5_tasks_d', 'taotao_v5_tasks_w',
+    'taotao_v5_checkins_d', 'taotao_v5_checkins_w', 'taotao_v5_checkins_pk',
+    'taotao_v5_points', 'taotao_v5_draws', 'taotao_v5_draw_history',
+    'taotao_v5_collection', 'taotao_v5_wishes', 'taotao_v5_wish_energy',
+    'taotao_v5_claimed', 'taotao_v5_aiY', 'taotao_v5_data_ver'
+  ];
+  for (let k of keys) { sSet(k, ''); }
+
+  // 重置内存状态
+  dailyTasks = [...DEFAULT_DAILY_TASKS];
+  weeklyTasks = [...DEFAULT_WEEKLY_TASKS];
+  dailyCheckins = {};
+  weeklyCheckins = {};
+  pkCheckins = {};
+  totalPoints = 0;
+  drawsAvailable = 0;
+  drawHistory = [];
+  collection = {};
+  wishes = [...DEFAULT_WISHES];
+  wishEnergy = 0;
+  claimHistory = {};
+  aiFloatY = null;
+
+  debugger;
+  saveAll();
+  showToast('✅ 已恢复默认设置！');
+  renderAll();
+  spawnLeaves('tab-' + currentTab);
+}
+
+// ============ 数据导出/导入 ============
+function exportData() {
+  let data = {
+    dailyTasks: dailyTasks,
+    weeklyTasks: weeklyTasks,
+    dailyCheckins: dailyCheckins,
+    weeklyCheckins: weeklyCheckins,
+    pkCheckins: pkCheckins,
+    totalPoints: totalPoints,
+    drawsAvailable: drawsAvailable,
+    drawHistory: drawHistory,
+    collection: collection,
+    wishes: wishes,
+    wishEnergy: wishEnergy,
+    claimHistory: claimHistory,
+    aiFloatY: aiFloatY
+  };
+  let json = JSON.stringify(data, null, 2);
+  let blob = new Blob([json], {type: 'application/json'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = 'taotao_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 数据已导出！请保存好此文件');
+}
+
+function importData(file) {
+  if (!file) return;
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      let data = JSON.parse(e.target.result);
+      if (data.dailyTasks) dailyTasks = data.dailyTasks;
+      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
+      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
+      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
+      if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
+      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
+      if (data.drawHistory) drawHistory = data.drawHistory;
+      if (data.collection) collection = data.collection;
+      if (data.wishes) wishes = data.wishes;
+      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
+      if (data.claimHistory) claimHistory = data.claimHistory;
+      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
+      saveAll();
+      renderAll();
+      showToast('✅ 数据已导入！页面已刷新');
+    } catch(err) {
+      showToast('❌ 导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============ INIT ============
+function init() {
+  initStorage(); 
+  // alert('存储类型：' + _storageType);  // 已删除弹出提示
+  loadAll();
+  window.addEventListener('beforeunload', () => { try { saveAll(); } catch(e){} });
+  for (let bt of DEFAULT_DAILY_TASKS) { if (!dailyTasks.find(t => t.id === bt.id)) dailyTasks.push({ ...bt }); }
+  for (let bt of DEFAULT_WEEKLY_TASKS) { if (!weeklyTasks.find(t => t.id === bt.id)) weeklyTasks.push({ ...bt }); }
+  document.getElementById('prevDay').onclick = () => { currentDate = new Date(currentDate.getTime() - 86400000); renderAll(); };
+  document.getElementById('nextDay').onclick = () => { currentDate = new Date(currentDate.getTime() + 86400000); renderAll(); };
+  document.getElementById('goToday').onclick = () => { currentDate = new Date(); renderAll(); };
+  document.getElementById('addTaskModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+  document.getElementById('resetConfirmModal').addEventListener('click', function(e) { if (e.target === this) hideResetConfirm(); });
+
+  // Initialize collection for existing draw history
+  for (let h of drawHistory) {
+    if (h.cardId) collection[h.cardId] = (collection[h.cardId] || 0) + 1;
+  }
+
+  // 初始显示每日任务的恢复按钮
+  document.getElementById('reset-wrapper-daily').classList.add('active');
+
+  setupAIFloat();
+  // warnStorage();  // 已禁用存储警告弹窗
+  // 调试：输出当前存储状态到页面
+  try {
+    let dc = dailyCheckins[dateKey(currentDate)] || {};
+    console.log('存储类型:', _storageType, '| dailyCheckins:', dailyCheckins, '| 今日打卡:', dc);
+  } catch(e){}
+  renderAll();
+  spawnLeaves('tab-daily');
+  // 检测并显示存储状态
+  checkStorage();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
