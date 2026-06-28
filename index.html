@@ -1055,23 +1055,11 @@ body > * { position: relative; z-index: 1; }
 </svg>
 </div>
 
-<!-- 保存/导入按钮（左上角） -->
-<div style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px;align-items:center;">
-  <button id="saveBtn" onclick="doSave()" style="padding:8px 16px;border-radius:20px;border:2px solid #FF6B35;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;font-size:0.8rem;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(255,107,53,0.4);">🦞 保存</button>
-  <button onclick="document.getElementById('importFileInput').click()" style="padding:7px 12px;border-radius:16px;border:2px solid #2196F3;background:rgba(255,255,255,0.95);color:#1976D2;font-size:0.75rem;font-weight:bold;cursor:pointer;">📥 导入</button>
-  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="doImport(this.files[0])">
-</div>
-<!-- 保存状态提示 -->
-<div id="saveToast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-size:0.85rem;font-weight:bold;color:#fff;z-index:9999;display:none;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.25);"></div>
-
 <!-- HEADER -->
-<div class="header" style="padding-top:52px;">
+<div class="header">
   <h1>🌿 韬韬学习打卡表 🌿</h1>
   <p class="subtitle" id="headerTip">今天也要加油哦～</p>
 </div>
-
-<!-- 存储状态提示条 -->
-<div id="storageNotice" style="max-width:370px;margin:0 auto 10px;padding:8px 14px;border-radius:12px;font-size:0.75rem;text-align:center;display:none;"></div>
 
 <!-- POINTS BAR -->
 <div class="points-bar">
@@ -1689,139 +1677,6 @@ function sSet(k, v) {
 
 // ============ 保存/导入（可靠方案） ============
 // 保存：存localStorage + 下载JSON备份文件
-function doSave() {
-  // 1. 存localStorage
-  try { saveAll(); } catch(e) { console.log('localStorage保存失败', e); }
-
-  // 2. 组装所有数据
-  var data = {
-    version: 'final-v1',
-    date: new Date().toISOString(),
-    dailyTasks: dailyTasks,
-    weeklyTasks: weeklyTasks,
-    dailyCheckins: dailyCheckins,
-    weeklyCheckins: weeklyCheckins,
-    pkCheckins: pkCheckins,
-    totalPoints: totalPoints,
-    drawsAvailable: drawsAvailable,
-    drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
-    drawHistory: drawHistory,
-    collection: collection,
-    wishes: wishes,
-    wishEnergy: wishEnergy,
-    claimHistory: claimHistory,
-    aiFloatY: aiFloatY
-  };
-
-  // 3. 下载JSON文件
-  var json = JSON.stringify(data, null, 2);
-  var blob = new Blob([json], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  var today = new Date();
-  var fname = '韬韬打卡备份_' + today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate()) + '.json';
-  a.href = url;
-  a.download = fname;
-  a.click();
-  URL.revokeObjectURL(url);
-
-  // 4. 视觉反馈
-  showSaveToast('✅ 保存成功！备份文件已下载', '#4CAF50');
-  // 按钮动画
-  var btn = document.getElementById('saveBtn');
-  if (btn) {
-    btn.innerHTML = '✅ 已保存';
-    btn.style.background = 'linear-gradient(135deg,#4CAF50,#388E3C)';
-    btn.style.borderColor = '#388E3C';
-    setTimeout(function() {
-      btn.innerHTML = '🦞 保存';
-      btn.style.background = 'linear-gradient(135deg,#FF8C42,#FF6B35)';
-      btn.style.borderColor = '#FF6B35';
-    }, 2000);
-  }
-}
-
-// 导入：读取JSON备份文件并恢复数据
-function doImport(file) {
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var data = JSON.parse(e.target.result);
-      // 恢复数据
-      if (data.dailyTasks) dailyTasks = data.dailyTasks;
-      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
-      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
-      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
-      if (data.pkCheckins) pkCheckins = data.pkCheckins;
-      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
-      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
-      if (data.drawHistory) drawHistory = data.drawHistory;
-      if (data.collection) collection = data.collection;
-      if (data.wishes) wishes = data.wishes;
-      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
-      if (data.claimHistory) claimHistory = data.claimHistory;
-      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
-      // 恢复抽卡网格
-      if (data.drawGridCards) {
-        drawGridCards = data.drawGridCards.map(function(s) {
-          return {
-            card: s.cardId ? CARD_POOL.find(function(c) { return c.id === s.cardId; }) || null : null,
-            flipped: s.flipped,
-            animating: s.animating
-          };
-        });
-      }
-      // 保存到localStorage
-      try { saveAll(); } catch(e) {}
-      // 刷新界面
-      renderCurrentTab();
-      updatePointsUI();
-      showSaveToast('✅ 导入成功！数据已恢复', '#4CAF50');
-    } catch(err) {
-      showSaveToast('❌ 导入失败：文件格式错误', '#F44336');
-      console.error('导入失败', err);
-    }
-  };
-  reader.readAsText(file);
-}
-
-//  toast提示
-function showSaveToast(msg, color) {
-  var el = document.getElementById('saveToast');
-  if (!el) return;
-  el.textContent = msg;
-  el.style.background = color || '#4CAF50';
-  el.style.display = 'block';
-  el.style.opacity = '1';
-  setTimeout(function() {
-    el.style.opacity = '0';
-    setTimeout(function() { el.style.display = 'none'; }, 400);
-  }, 2500);
-}
-
-// 检测存储状态并显示提示
-function checkStorage() {
-  var notice = document.getElementById('storageNotice');
-  if (!notice) return;
-  var isFileProtocol = (window.location.protocol === 'file:');
-  if (isFileProtocol) {
-    notice.style.display = 'block';
-    notice.style.background = 'rgba(255,235,200,0.95)';
-    notice.style.color = '#E65100';
-    notice.style.border = '1px solid #FFB74D';
-    notice.innerHTML = '⚠️ 当前为文件模式（直接打开HTML文件），数据可能无法自动保存。<br>请每次修改后点击 <b>🦞 保存</b> 按钮下载备份文件，下次打开时点击 <b>📥 导入</b> 恢复数据。';
-  } else {
-    notice.style.display = 'block';
-    notice.style.background = 'rgba(200,235,200,0.95)';
-    notice.style.color = '#2E7D32';
-    notice.style.border = '1px solid #A5D6A7';
-    notice.innerHTML = '✅ 当前为网络模式，数据会自动保存，无需手动操作。';
-    // 3秒后自动隐藏
-    setTimeout(function() { notice.style.display = 'none'; }, 4000);
-  }
-}
-
 function saveAll() {
   sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
   sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
@@ -2750,8 +2605,6 @@ function init() {
   } catch(e){}
   renderAll();
   spawnLeaves('tab-daily');
-  // 检测并显示存储状态
-  checkStorage();
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
