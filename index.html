@@ -1093,6 +1093,8 @@ body > * { position: relative; z-index: 1; }
   <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
   <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
   <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
+  <span style="flex:1;"></span>
+  <button class="tab" onclick="resetAllData()" style="background:#ff4444;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;">🔄 重置</button>
 </div>
 
 <!-- ===== TAB: Daily ===== -->
@@ -1756,6 +1758,18 @@ function migrateData() {
   sSet('taotao_v5_data_ver', JSON.stringify(DATA_VERSION));
 }
 
+// ============ RESET ============
+function resetAllData() {
+  if (!confirm('确定要重置所有数据吗？\n这将清除所有打卡记录、权益卡、能量等全部数据！')) return;
+  let keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    let k = localStorage.key(i);
+    if (k && k.startsWith('taotao_')) keys.push(k);
+  }
+  for (let k of keys) { localStorage.removeItem(k); }
+  alert('数据已重置！页面将重新加载。');
+  location.reload();
+}
 // ============ UTILS ============
 function dateKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function weekKey(d) { let m=new Date(d); let day=m.getDay(); let diff=m.getDate()-day+(day===0?-6:1); m.setDate(diff); return dateKey(m); }
@@ -1962,7 +1976,6 @@ function flipDrawCard(idx) {
 
   drawsAvailable--;
   saveAll();
-  renderDrawPage();
 
   // 按权重抽卡（R1/R2 概率最高）
   let reward = weightedDrawCard();
