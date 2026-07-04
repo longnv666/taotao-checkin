@@ -1881,7 +1881,7 @@ function renderQuanyi() {
 }
 
 // ============ 抽卡页 (6张牌网格) ============
-let drawGridCards = []; // 当前6张牌 [{card, flipped, animating}]
+let drawGridCards = []; // 当前1张牌 [{card, flipped, animating}]
 
 function renderDrawPage() {
   document.getElementById('drawTabPoints').textContent = totalPoints;
@@ -1908,16 +1908,16 @@ function exchangeDrawFromTab() {
   showToast('消耗1500能量，获得1次抽卡机会！🎴');
 }
 
-// 初始化6张随机牌（背面朝上）
+// 初始化1张随机牌（背面朝上）
 function initDrawGrid() {
   drawGridCards = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 1; i++) {
     drawGridCards.push({ card: null, flipped: false, animating: false });
   }
   renderDrawGrid();
 }
 
-// 渲染6张牌到网格（每张牌始终有两面：正面橙色+背面内容）
+// 渲染1张牌到网格（每张牌始终有两面：正面橙色+背面内容）
 function renderDrawGrid() {
   let grid = document.getElementById('drawCardsGrid');
   if (!grid) return;
