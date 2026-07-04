@@ -1055,11 +1055,23 @@ body > * { position: relative; z-index: 1; }
 </svg>
 </div>
 
+<!-- 保存/导入按钮（左上角） -->
+<div style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px;align-items:center;">
+  <button id="saveBtn" onclick="doSave()" style="padding:8px 16px;border-radius:20px;border:2px solid #FF6B35;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;font-size:0.8rem;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(255,107,53,0.4);">🦞 保存</button>
+  <button onclick="document.getElementById('importFileInput').click()" style="padding:7px 12px;border-radius:16px;border:2px solid #2196F3;background:rgba(255,255,255,0.95);color:#1976D2;font-size:0.75rem;font-weight:bold;cursor:pointer;">📥 导入</button>
+  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="doImport(this.files[0])">
+</div>
+<!-- 保存状态提示 -->
+<div id="saveToast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-size:0.85rem;font-weight:bold;color:#fff;z-index:9999;display:none;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.25);"></div>
+
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="padding-top:52px;">
   <h1>🌿 韬韬学习打卡表 🌿</h1>
   <p class="subtitle" id="headerTip">今天也要加油哦～</p>
 </div>
+
+<!-- 存储状态提示条 -->
+<div id="storageNotice" style="max-width:370px;margin:0 auto 10px;padding:8px 14px;border-radius:12px;font-size:0.75rem;text-align:center;display:none;"></div>
 
 <!-- POINTS BAR -->
 <div class="points-bar">
@@ -1091,7 +1103,7 @@ body > * { position: relative; z-index: 1; }
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('daily')">📝 每日任务</button>
   <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
-  <button class="tab" onclick="switchTab('pk')">📅 课表</button>
+  <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
   <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
 </div>
 
@@ -1129,7 +1141,7 @@ body > * { position: relative; z-index: 1; }
 <div id="tab-pk" class="tab-content">
   <div class="leaves-area" id="leaves-tab-pk"></div>
   <div class="section-header">
-    <div class="section-title">📅 每周课表 · 兴趣课 + PK</div>
+    <div class="section-title">⚔️ 每晚PK战场 · 完成 +150能量</div>
   </div>
   <div id="pkCard"></div>
 </div>
@@ -1179,17 +1191,17 @@ body > * { position: relative; z-index: 1; }
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FF1744,#B71C1C);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SSR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">传说级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">3%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">10%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#2979FF,#0D47A1);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">稀有级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">4%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">30%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FFAB91,#E64A19);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">R</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">普通级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">93%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">60%</div>
         </div>
       </div>
     </div>
@@ -1351,15 +1363,13 @@ body > * { position: relative; z-index: 1; }
   </div>
   <div class="ai-quick-btns" id="aiQuickBtns">
     <button onclick="aiQuick('analyze')">🔍 今日分析</button>
-    <button onclick="aiQuick('encourage')">💬 鼓励</button>
-    <button onclick="aiQuick('pk')">📅 今日课表</button>
+    <button onclick="aiQuick('encourage')">💬 来点鼓励</button>
     <button onclick="aiQuick('tip')">💡 学习技巧</button>
-    <button onclick="aiQuick('card')">🎴 抽卡</button>
-    <button onclick="aiQuick('joke')">😂 笑话</button>
+    <button onclick="aiQuick('report')">📋 周报</button>
   </div>
   <div class="ai-chat-msgs" id="aiChatMsgs">
     <div class="ai-chat-msg assistant">
-      <div class="bubble">🦞 咔嚓咔嚓！你好韬韬！我是龙虾学习助手～<br>我能帮你分析每日进度、查看PK安排、给你鼓励、讲笑话...<br>快试试下面的按钮吧！👇</div>
+      <div class="bubble">你好韬韬！我是龙虾助手 🦞<br>咔嚓咔嚓～有什么需要帮忙的吗？</div>
     </div>
   </div>
   <div class="ai-chat-input-row">
@@ -1417,67 +1427,54 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 // ============ DATA ============
 const DEFAULT_DAILY_TASKS = [
-  { id: 'd1', label: '起床晨读（文言文·英语2000词·名著单词·语文字词先读后组词）', emoji: '🌅', points: 100, builtin: true },
-  { id: 'd2', label: '语文练字', emoji: '✍️', points: 100, builtin: true },
-  { id: 'd3', label: '英语精读（豆包辅导精读名著）×1页', emoji: '📖', points: 100, builtin: true },
-  { id: 'd4', label: 'Raz/神奇树屋 ×1篇', emoji: '📚', points: 100, builtin: true },
-  { id: 'd5', label: 'Tiddy口语 ×1篇', emoji: '🗣️', points: 100, builtin: true },
-  { id: 'd6', label: '可可英语 ×1篇', emoji: '🎧', points: 100, builtin: true },
-  { id: 'd7', label: '新闻知天下 ×1篇（复制感兴趣新闻·豆包引导思辨思考）', emoji: '🌍', points: 100, builtin: true },
-  { id: 'd8', label: '家庭家务', emoji: '🏠', points: 100, builtin: true },
-  { id: 'd9', label: '自己家务（洗袜子等）', emoji: '🧹', points: 100, builtin: true },
-  { id: 'd10', label: '晚上9:45刷牙·看书（中英文阅读）·睡觉', emoji: '😴', points: 100, builtin: true }
+  { id: 'd1', label: '起床晨读（妈妈要抽查）', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd2', label: '听课（要多点时间听英语）', emoji: '📺', points: 100, builtin: true },
+  { id: 'd3', label: 'Tiddy英语口语练习 ×1篇', emoji: '🗣️', points: 100, builtin: true },
+  { id: 'd4', label: '可可英语朗读 ×1篇', emoji: '📖', points: 100, builtin: true },
+  { id: 'd5', label: '60秒知天下（新闻）', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd6', label: '跑步运动', emoji: '🏃', points: 100, builtin: true },
+  { id: 'd7', label: '完成学校作业', emoji: '✏️', points: 100, builtin: true },
+  { id: 'd8', label: '晚上9:45看书（中文书+英语书）', emoji: '📚', points: 100, builtin: true },
+  { id: 'd9', label: '洗自己的袜子', emoji: '🧦', points: 100, builtin: true },
+  { id: 'd10', label: '晚上最迟10:15睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
-  { id: 'w1', label: '数学思维导图（周一）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w2', label: '数学习题核对答案（周三）', emoji: '📝', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w3', label: '物理课本预习（周四）', emoji: '🔬', target: 1, unit: '课', points: 200, builtin: true },
-  { id: 'w4', label: '物理习题（周五）', emoji: '⚙️', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w5', label: '语文课本预习精读（一周完成一课）', emoji: '📖', target: 1, unit: '课', points: 200, builtin: true },
-  { id: 'w6', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w7', label: '小咖魔力写作（五、六年级）', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w8', label: '小咖魔力精读（五、六年级）', emoji: '📚', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w9', label: 'AI应用出产品', emoji: '💻', target: 1, unit: '个', points: 200, builtin: true },
-  { id: 'w10', label: '世界历史PK前准备', emoji: '📋', target: 4, unit: '次', points: 200, builtin: true }
+  { id: 'w1', label: 'Tiddy新闻（五六年级）', emoji: '📰', target: 1, unit: '个', points: 200, builtin: true },
+  { id: 'w2', label: 'RAZ精读', emoji: '📚', target: 3, unit: '篇', points: 200, builtin: true },
+  { id: 'w3', label: '小咖文言文', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w4', label: '文言文写作', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w5', label: '数学思维导图或习题（PK用）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w6', label: '大语文PK任务', emoji: '📝', target: 2, unit: '个', points: 200, builtin: true },
+  { id: 'w7', label: '家务（洗碗/扫地/整理等）', emoji: '🧹', target: 5, unit: '次', points: 0, builtin: true }
 ];
 const PK_SCHEDULE = {
   '周一': [
-    { time: '09:00', subject: '足球训练', icon: '⚽' },
-    { time: '19:00', subject: '数学PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文·世界历史（PK前思考跨学科题）', icon: '🏛️' }
+    { time: '19:00', subject: '数学 PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
   ],
   '周二': [
-    { time: '09:00', subject: '足球训练', icon: '⚽' },
-    { time: '19:00', subject: '大语文·世界人文地理', icon: '🌍' },
+    { time: '19:00', subject: '大语文（世界人文地理）', icon: '🌍' },
     { time: '20:00', subject: '中文助教', icon: '📝' },
-    { time: '20:35', subject: '大语文·希腊神话（PK前思考评价题）', icon: '⚡' }
+    { time: '20:35', subject: '大语文（希腊神话）', icon: '⚡' }
   ],
   '周三': [
-    { time: '09:00', subject: '足球训练', icon: '⚽' },
-    { time: '19:00', subject: '数学PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文·世界历史（PK前思考跨学科题）', icon: '🏛️' }
+    { time: '19:00', subject: '数学 PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
   ],
   '周四': [
-    { time: '09:00', subject: '足球训练', icon: '⚽' },
-    { time: '14:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '中文助教', icon: '📝' },
-    { time: '20:35', subject: '小小地理学家AIPK', icon: '🗺️' }
+    { time: '20:35', subject: '大语文（地理学家）', icon: '🗺️' }
   ],
   '周五': [
-    { time: '09:00', subject: '足球训练', icon: '⚽' },
-    { time: '14:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '21:00', subject: '世界历史（PK前思考）', icon: '📖' }
+    { time: '21:00', subject: '世界历史（准备）', icon: '📖' }
   ],
   '周六': [
-    { time: '13:10', subject: '核桃编程', icon: '💻' },
-    { time: '16:15', subject: '架子鼓', icon: '🥁' },
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '20:30', subject: '世界历史（班班梳理）', icon: '🏛️' }
+    { time: '20:30', subject: '世界历史', icon: '🏛️' }
   ],
   '周日': [
-    { time: '15:30', subject: '赛考直播课（7/5·7/12·7/19）', icon: '📡' },
-    { time: '20:30', subject: '世界历史（PK前思考）', icon: '📖' }
+    { time: '20:30', subject: '世界历史（准备）', icon: '📖' }
   ]
 };
 const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
@@ -1576,27 +1573,21 @@ const CARD_POOL = [
     desc: '凹凸世界 · 限定卡' }
 ];
 
-// 抽卡概率：传说级3%，稀有级4%，普通级93%（普通级只含R1~R4，R1/R2权重更高）
+// 抽卡概率：传说级5%，稀有级6%，普通级89%（普通级只含R1~R4）
 function weightedDrawCard() {
   let rand = Math.random();
-  if (rand < 0.03) {
-    // 传说级：SSR + 限定（3%）
+  if (rand < 0.05) {
+    // 传说级：SSR + 限定
     let pool = CARD_POOL.filter(c => c.rarity === 'SSR' || c.rarity === '限定');
     return pool[Math.floor(Math.random() * pool.length)];
-  } else if (rand < 0.07) {
-    // 稀有级：SR（4%）
+  } else if (rand < 0.11) {
+    // 稀有级：SR
     let pool = CARD_POOL.filter(c => c.rarity === 'SR');
     return pool[Math.floor(Math.random() * pool.length)];
   } else {
-    // 普通级：R1~R4，R1/R2权重更高（93%）
-    // 权重：R1=35%, R2=35%, R3=15%, R4=15%
-    let r = Math.random();
-    let id;
-    if (r < 0.35) id = 'r1';
-    else if (r < 0.70) id = 'r2';
-    else if (r < 0.85) id = 'r3';
-    else id = 'r4';
-    return CARD_POOL.find(c => c.id === id);
+    // 普通级：只含 R1~R4
+    let pool = CARD_POOL.filter(c => c.rarity === 'R' && ['r1','r2','r3','r4'].includes(c.id));
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 }
 
@@ -1698,9 +1689,142 @@ function sSet(k, v) {
 
 // ============ 保存/导入（可靠方案） ============
 // 保存：存localStorage + 下载JSON备份文件
+function doSave() {
+  // 1. 存localStorage
+  try { saveAll(); } catch(e) { console.log('localStorage保存失败', e); }
+
+  // 2. 组装所有数据
+  var data = {
+    version: 'final-v1',
+    date: new Date().toISOString(),
+    dailyTasks: dailyTasks,
+    weeklyTasks: weeklyTasks,
+    dailyCheckins: dailyCheckins,
+    weeklyCheckins: weeklyCheckins,
+    pkCheckins: pkCheckins,
+    totalPoints: totalPoints,
+    drawsAvailable: drawsAvailable,
+    drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
+    drawHistory: drawHistory,
+    collection: collection,
+    wishes: wishes,
+    wishEnergy: wishEnergy,
+    claimHistory: claimHistory,
+    aiFloatY: aiFloatY
+  };
+
+  // 3. 下载JSON文件
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var today = new Date();
+  var fname = '韬韬打卡备份_' + today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate()) + '.json';
+  a.href = url;
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  // 4. 视觉反馈
+  showSaveToast('✅ 保存成功！备份文件已下载', '#4CAF50');
+  // 按钮动画
+  var btn = document.getElementById('saveBtn');
+  if (btn) {
+    btn.innerHTML = '✅ 已保存';
+    btn.style.background = 'linear-gradient(135deg,#4CAF50,#388E3C)';
+    btn.style.borderColor = '#388E3C';
+    setTimeout(function() {
+      btn.innerHTML = '🦞 保存';
+      btn.style.background = 'linear-gradient(135deg,#FF8C42,#FF6B35)';
+      btn.style.borderColor = '#FF6B35';
+    }, 2000);
+  }
+}
+
+// 导入：读取JSON备份文件并恢复数据
+function doImport(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      // 恢复数据
+      if (data.dailyTasks) dailyTasks = data.dailyTasks;
+      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
+      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
+      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
+      if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
+      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
+      if (data.drawHistory) drawHistory = data.drawHistory;
+      if (data.collection) collection = data.collection;
+      if (data.wishes) wishes = data.wishes;
+      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
+      if (data.claimHistory) claimHistory = data.claimHistory;
+      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
+      // 恢复抽卡网格
+      if (data.drawGridCards) {
+        drawGridCards = data.drawGridCards.map(function(s) {
+          return {
+            card: s.cardId ? CARD_POOL.find(function(c) { return c.id === s.cardId; }) || null : null,
+            flipped: s.flipped,
+            animating: s.animating
+          };
+        });
+      }
+      // 保存到localStorage
+      try { saveAll(); } catch(e) {}
+      // 刷新界面
+      renderCurrentTab();
+      updatePointsUI();
+      showSaveToast('✅ 导入成功！数据已恢复', '#4CAF50');
+    } catch(err) {
+      showSaveToast('❌ 导入失败：文件格式错误', '#F44336');
+      console.error('导入失败', err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+//  toast提示
+function showSaveToast(msg, color) {
+  var el = document.getElementById('saveToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.background = color || '#4CAF50';
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { el.style.display = 'none'; }, 400);
+  }, 2500);
+}
+
+// 检测存储状态并显示提示
+function checkStorage() {
+  var notice = document.getElementById('storageNotice');
+  if (!notice) return;
+  var isFileProtocol = (window.location.protocol === 'file:');
+  if (isFileProtocol) {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(255,235,200,0.95)';
+    notice.style.color = '#E65100';
+    notice.style.border = '1px solid #FFB74D';
+    notice.innerHTML = '⚠️ 当前为文件模式（直接打开HTML文件），数据可能无法自动保存。<br>请每次修改后点击 <b>🦞 保存</b> 按钮下载备份文件，下次打开时点击 <b>📥 导入</b> 恢复数据。';
+  } else {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(200,235,200,0.95)';
+    notice.style.color = '#2E7D32';
+    notice.style.border = '1px solid #A5D6A7';
+    notice.innerHTML = '✅ 当前为网络模式，数据会自动保存，无需手动操作。';
+    // 3秒后自动隐藏
+    setTimeout(function() { notice.style.display = 'none'; }, 4000);
+  }
+}
+
 function saveAll() {
-  sSet('taotao_v6_tasks_d', JSON.stringify(dailyTasks));
-  sSet('taotao_v6_tasks_w', JSON.stringify(weeklyTasks));
+  sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
+  sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
   sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
   sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
   sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
@@ -1718,8 +1842,8 @@ function saveAll() {
 }
 
 function loadAll() {
-  try { let d=JSON.parse(sGet('taotao_v6_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
-  try { let w=JSON.parse(sGet('taotao_v6_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
+  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
+  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
@@ -1746,15 +1870,16 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 5;
+  const DATA_VERSION = 4;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
 
-  // v5: 更新任务列表为最新版
+  // 内置每日任务 points 强制设为 10
+  // 内置周任务 points 强制设为 50
   let changed = false;
   const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
-  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7','w8','w9','w10'];
+  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
   for (let t of dailyTasks) {
     if (DAILY_BUILTIN_IDS.includes(t.id) && t.points !== 100) { t.points = 100; changed = true; }
   }
@@ -1762,8 +1887,8 @@ function migrateData() {
     if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
   }
   if (changed) {
-    sSet('taotao_v6_tasks_d', JSON.stringify(dailyTasks));
-    sSet('taotao_v6_tasks_w', JSON.stringify(weeklyTasks));
+    sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
+    sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
   }
   sSet('taotao_v5_data_ver', JSON.stringify(DATA_VERSION));
 }
@@ -2470,36 +2595,11 @@ function confirmAddTask() {
 function setupAIFloat() {
   let el = document.getElementById('aiFloat'); if (!el) return;
   if (aiFloatY !== null && aiFloatY !== undefined) el.style.top = aiFloatY + 'px'; else el.style.top = '40%';
-  let startY, startTop, startX, dragging = false, moved = false;
-
-  el.addEventListener('pointerdown', function(e) {
-    dragging = true; moved = false;
-    startY = e.clientY; startX = e.clientX; startTop = el.getBoundingClientRect().top;
-    el.classList.add('dragging'); el.setPointerCapture(e.pointerId);
-    e.stopPropagation();
-  });
-  el.addEventListener('pointermove', function(e) {
-    if (!dragging) return;
-    let dy = e.clientY - startY; let dx = e.clientX - startX;
-    if (Math.abs(dy) > 3 || Math.abs(dx) > 3) moved = true;
-    if (moved) {
-      let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy));
-      el.style.top = newTop + 'px'; aiFloatY = newTop;
-    }
-  });
-  el.addEventListener('pointerup', function(e) {
-    if (!dragging) return;
-    dragging = false; el.classList.remove('dragging');
-    if (el.hasPointerCapture) { try { el.releasePointerCapture(e.pointerId); } catch(e) {} }
-    if (!moved) { openAIChat(); }
-    try { saveAll(); } catch(e) {}
-  });
-  el.addEventListener('pointercancel', function(e) {
-    dragging = false; moved = false;
-    el.classList.remove('dragging');
-  });
-  // 额外后备：touch + click
-  el.addEventListener('click', function(e) { if (!moved && !dragging) { e.preventDefault(); openAIChat(); } });
+  let startY, startTop, dragging = false;
+  el.addEventListener('pointerdown', function(e) { dragging = true; startY = e.clientY; startTop = el.getBoundingClientRect().top; el.classList.add('dragging'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', function(e) { if (!dragging) return; let dy = e.clientY - startY; let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy)); el.style.top = newTop + 'px'; aiFloatY = newTop; });
+  el.addEventListener('pointerup', function(e) { if (!dragging) return; dragging = false; el.classList.remove('dragging'); el.releasePointerCapture(e.pointerId); let dy = e.clientY - startY; if (Math.abs(dy) < 5) openAIChat(); saveAll(); });
+  el.addEventListener('pointercancel', function(e) { dragging = false; el.classList.remove('dragging'); });
 }
 function openAIChat() { document.getElementById('aiChatPanel').classList.remove('hidden'); document.getElementById('chatBackdrop').classList.remove('hidden'); document.getElementById('aiFloat').style.display = 'none'; generateAIWelcome(); setTimeout(() => document.getElementById('aiChatInput').focus(), 400); }
 function closeAIChat() { document.getElementById('aiChatPanel').classList.add('hidden'); document.getElementById('chatBackdrop').classList.add('hidden'); document.getElementById('aiFloat').style.display = 'flex'; }
@@ -2513,30 +2613,12 @@ function generateAIReply(q) { let dk = dateKey(currentDate); let ci = dailyCheck
   if (q.includes('技巧') || q.includes('方法') || q.includes('怎么学')) { let tips = ['📖 番茄工作法：学25分钟休息5分钟，效率超高！', '🧠 睡前复习：睡前30分钟复习，大脑会在睡眠中巩固记忆', '✏️ 费曼学习法：把学到的内容讲给别人听，讲不清的就是没懂的', '🎯 先难后易：精力最好的时候攻克最难的']; return '💡 ' + tips[Math.floor(Math.random() * tips.length)]; }
   if (q.includes('能量') || q.includes('分数') || q.includes('多少分')) return '🏆 你目前累计 ' + totalPoints + ' 能量，今天获得 ' + calcTodayPoints() + ' 能量。\n还有 ' + drawsAvailable + ' 次抽卡机会！';
   if (q.includes('抽卡') || q.includes('权益卡') || q.includes('卡片')) return '🎴 你还有 ' + drawsAvailable + ' 次抽卡机会！已有 ' + Object.keys(collection).filter(k => collection[k] > 0).length + ' 种权益卡。\n1500能量兑换1次，快去看看权益卡页面吧～';
-  if (q.includes('pk') || q.includes('课表') || q.includes('今晚') || q.includes('今天')) { let wd = WEEKDAY_NAMES[currentDate.getDay()]; let sched = PK_SCHEDULE[wd] || []; if (sched.length === 0) return '今天没有课表安排，好好休息吧～'; return '📅 今日课表：\n' + sched.map(e => e.time + ' ' + e.icon + ' ' + e.subject).join('\n'); }
+  if (q.includes('pk') || q.includes('课表') || q.includes('今晚')) { let wd = WEEKDAY_NAMES[currentDate.getDay()]; let sched = PK_SCHEDULE[wd] || []; if (sched.length === 0) return '今天没有PK安排，好好休息吧～'; return '⚔️ 今晚PK安排：\n' + sched.map(e => e.time + ' ' + e.subject).join('\n'); }
   if (q.includes('许愿') || q.includes('愿望')) { let activeWishes = wishes.filter(w => w.current < w.target); if (activeWishes.length === 0) return '🌟 所有愿望都实现了吗？太厉害了！'; return '🌟 你还有 ' + activeWishes.length + ' 个愿望在进行中：\n' + activeWishes.slice(0, 3).map(w => w.icon + ' ' + w.name + ' (' + w.current + '/' + w.target + ')').join('\n'); }
   if (q.includes('hello') || q.includes('你好') || q.includes('嗨')) return '你好韬韬！🦞 我是龙虾助手～咔嚓咔嚓！\n有什么需要帮忙的吗？';
   let defaults = ['咔嚓！分析完毕。坚持就是胜利，继续加油韬韬！💪', '这是个好问题！龙虾建议你先专注完成今天的打卡任务哦～', '收到！🦞 每一天的努力都不会白费！', '明白了！龙虾助手会一直陪着你～有什么问题随时找我！'];
   return defaults[Math.floor(Math.random() * defaults.length)]; }
-function aiQuick(type) {
-  let msgs = document.getElementById('aiChatMsgs');
-  let q;
-  switch (type) {
-    case 'analyze': q = '今天进度怎么样'; break;
-    case 'encourage': q = '给我点鼓励'; break;
-    case 'tip': q = '有什么学习技巧'; break;
-    case 'report': q = '我的能量'; break;
-    case 'card': q = '抽卡'; break;
-    case 'joke': q = '讲个笑话'; break;
-    case 'pk': q = 'PK'; break;
-    case 'quote': q = '名言'; break;
-    case 'wish': q = '许愿'; break;
-    case 'homework': q = '作业'; break;
-    default: q = '你好';
-  }
-  addAIMsg(q, 'user');
-  setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); updateAIBadge(); }, 400 + Math.random() * 300);
-}
+function aiQuick(type) { let q; switch (type) { case 'analyze': q = '今天进度怎么样'; break; case 'encourage': q = '给我点鼓励'; break; case 'tip': q = '有什么学习技巧'; break; case 'report': q = '我的能量'; break; default: q = '你好'; } addAIMsg(q, 'user'); setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); }, 500); }
 
 // ============ RESET ============
 function showResetConfirm() {
@@ -2550,7 +2632,6 @@ function doResetAll() {
 
   // 清除所有 localStorage 数据
   const keys = [
-    'taotao_v6_tasks_d', 'taotao_v6_tasks_w',
     'taotao_v5_tasks_d', 'taotao_v5_tasks_w',
     'taotao_v5_checkins_d', 'taotao_v5_checkins_w', 'taotao_v5_checkins_pk',
     'taotao_v5_points', 'taotao_v5_draws', 'taotao_v5_draw_history',
@@ -2669,6 +2750,8 @@ function init() {
   } catch(e){}
   renderAll();
   spawnLeaves('tab-daily');
+  // 检测并显示存储状态
+  checkStorage();
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
