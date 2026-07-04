@@ -1091,7 +1091,7 @@ body > * { position: relative; z-index: 1; }
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('daily')">📝 每日任务</button>
   <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
-  <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
+  <button class="tab" onclick="switchTab('pk')">📅 课表</button>
   <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
 </div>
 
@@ -1129,7 +1129,7 @@ body > * { position: relative; z-index: 1; }
 <div id="tab-pk" class="tab-content">
   <div class="leaves-area" id="leaves-tab-pk"></div>
   <div class="section-header">
-    <div class="section-title">⚔️ 每晚PK战场 · 完成 +150能量</div>
+    <div class="section-title">📅 每周课表 · 兴趣课 + PK</div>
   </div>
   <div id="pkCard"></div>
 </div>
@@ -1352,7 +1352,7 @@ body > * { position: relative; z-index: 1; }
   <div class="ai-quick-btns" id="aiQuickBtns">
     <button onclick="aiQuick('analyze')">🔍 今日分析</button>
     <button onclick="aiQuick('encourage')">💬 鼓励</button>
-    <button onclick="aiQuick('pk')">⚔️ PK安排</button>
+    <button onclick="aiQuick('pk')">📅 今日课表</button>
     <button onclick="aiQuick('tip')">💡 学习技巧</button>
     <button onclick="aiQuick('card')">🎴 抽卡</button>
     <button onclick="aiQuick('joke')">😂 笑话</button>
@@ -1417,54 +1417,67 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 // ============ DATA ============
 const DEFAULT_DAILY_TASKS = [
-  { id: 'd1', label: '起床晨读（妈妈要抽查）', emoji: '🌅', points: 100, builtin: true },
-  { id: 'd2', label: '听课（要多点时间听英语）', emoji: '📺', points: 100, builtin: true },
-  { id: 'd3', label: 'Tiddy英语口语练习 ×1篇', emoji: '🗣️', points: 100, builtin: true },
-  { id: 'd4', label: '可可英语朗读 ×1篇', emoji: '📖', points: 100, builtin: true },
-  { id: 'd5', label: '60秒知天下（新闻）', emoji: '🌍', points: 100, builtin: true },
-  { id: 'd6', label: '跑步运动', emoji: '🏃', points: 100, builtin: true },
-  { id: 'd7', label: '完成学校作业', emoji: '✏️', points: 100, builtin: true },
-  { id: 'd8', label: '晚上9:45看书（中文书+英语书）', emoji: '📚', points: 100, builtin: true },
-  { id: 'd9', label: '洗自己的袜子', emoji: '🧦', points: 100, builtin: true },
-  { id: 'd10', label: '晚上最迟10:15睡觉', emoji: '😴', points: 100, builtin: true }
+  { id: 'd1', label: '起床晨读（文言文·英语2000词·名著单词·语文字词先读后组词）', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd2', label: '语文练字', emoji: '✍️', points: 100, builtin: true },
+  { id: 'd3', label: '英语精读（豆包辅导精读名著）×1页', emoji: '📖', points: 100, builtin: true },
+  { id: 'd4', label: 'Raz/神奇树屋 ×1篇', emoji: '📚', points: 100, builtin: true },
+  { id: 'd5', label: 'Tiddy口语 ×1篇', emoji: '🗣️', points: 100, builtin: true },
+  { id: 'd6', label: '可可英语 ×1篇', emoji: '🎧', points: 100, builtin: true },
+  { id: 'd7', label: '新闻知天下 ×1篇（复制感兴趣新闻·豆包引导思辨思考）', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd8', label: '家庭家务', emoji: '🏠', points: 100, builtin: true },
+  { id: 'd9', label: '自己家务（洗袜子等）', emoji: '🧹', points: 100, builtin: true },
+  { id: 'd10', label: '晚上9:45刷牙·看书（中英文阅读）·睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
-  { id: 'w1', label: 'Tiddy新闻（五六年级）', emoji: '📰', target: 1, unit: '个', points: 200, builtin: true },
-  { id: 'w2', label: 'RAZ精读', emoji: '📚', target: 3, unit: '篇', points: 200, builtin: true },
-  { id: 'w3', label: '小咖文言文', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w4', label: '文言文写作', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w5', label: '数学思维导图或习题（PK用）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w6', label: '大语文PK任务', emoji: '📝', target: 2, unit: '个', points: 200, builtin: true },
-  { id: 'w7', label: '家务（洗碗/扫地/整理等）', emoji: '🧹', target: 5, unit: '次', points: 0, builtin: true }
+  { id: 'w1', label: '数学思维导图（周一）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w2', label: '数学习题核对答案（周三）', emoji: '📝', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w3', label: '物理课本预习（周四）', emoji: '🔬', target: 1, unit: '课', points: 200, builtin: true },
+  { id: 'w4', label: '物理习题（周五）', emoji: '⚙️', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w5', label: '语文课本预习精读（一周完成一课）', emoji: '📖', target: 1, unit: '课', points: 200, builtin: true },
+  { id: 'w6', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w7', label: '小咖魔力写作（五、六年级）', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w8', label: '小咖魔力精读（五、六年级）', emoji: '📚', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w9', label: 'AI应用出产品', emoji: '💻', target: 1, unit: '个', points: 200, builtin: true },
+  { id: 'w10', label: '世界历史PK前准备', emoji: '📋', target: 4, unit: '次', points: 200, builtin: true }
 ];
 const PK_SCHEDULE = {
   '周一': [
-    { time: '19:00', subject: '数学 PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+    { time: '09:00', subject: '足球训练', icon: '⚽' },
+    { time: '19:00', subject: '数学PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文·世界历史（PK前思考跨学科题）', icon: '🏛️' }
   ],
   '周二': [
-    { time: '19:00', subject: '大语文（世界人文地理）', icon: '🌍' },
+    { time: '09:00', subject: '足球训练', icon: '⚽' },
+    { time: '19:00', subject: '大语文·世界人文地理', icon: '🌍' },
     { time: '20:00', subject: '中文助教', icon: '📝' },
-    { time: '20:35', subject: '大语文（希腊神话）', icon: '⚡' }
+    { time: '20:35', subject: '大语文·希腊神话（PK前思考评价题）', icon: '⚡' }
   ],
   '周三': [
-    { time: '19:00', subject: '数学 PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+    { time: '09:00', subject: '足球训练', icon: '⚽' },
+    { time: '19:00', subject: '数学PK', icon: '🔢' },
+    { time: '20:30', subject: '大语文·世界历史（PK前思考跨学科题）', icon: '🏛️' }
   ],
   '周四': [
+    { time: '09:00', subject: '足球训练', icon: '⚽' },
+    { time: '14:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '中文助教', icon: '📝' },
-    { time: '20:35', subject: '大语文（地理学家）', icon: '🗺️' }
+    { time: '20:35', subject: '小小地理学家AIPK', icon: '🗺️' }
   ],
   '周五': [
+    { time: '09:00', subject: '足球训练', icon: '⚽' },
+    { time: '14:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '21:00', subject: '世界历史（准备）', icon: '📖' }
+    { time: '21:00', subject: '世界历史（PK前思考）', icon: '📖' }
   ],
   '周六': [
+    { time: '13:10', subject: '核桃编程', icon: '💻' },
+    { time: '16:15', subject: '架子鼓', icon: '🥁' },
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '20:30', subject: '世界历史', icon: '🏛️' }
+    { time: '20:30', subject: '世界历史（班班梳理）', icon: '🏛️' }
   ],
   '周日': [
-    { time: '20:30', subject: '世界历史（准备）', icon: '📖' }
+    { time: '15:30', subject: '赛考直播课（7/5·7/12·7/19）', icon: '📡' },
+    { time: '20:30', subject: '世界历史（PK前思考）', icon: '📖' }
   ]
 };
 const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
@@ -1686,8 +1699,8 @@ function sSet(k, v) {
 // ============ 保存/导入（可靠方案） ============
 // 保存：存localStorage + 下载JSON备份文件
 function saveAll() {
-  sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
-  sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
+  sSet('taotao_v6_tasks_d', JSON.stringify(dailyTasks));
+  sSet('taotao_v6_tasks_w', JSON.stringify(weeklyTasks));
   sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
   sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
   sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
@@ -1705,8 +1718,8 @@ function saveAll() {
 }
 
 function loadAll() {
-  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
-  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
+  try { let d=JSON.parse(sGet('taotao_v6_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
+  try { let w=JSON.parse(sGet('taotao_v6_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
@@ -1733,16 +1746,15 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 4;
+  const DATA_VERSION = 5;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
 
-  // 内置每日任务 points 强制设为 10
-  // 内置周任务 points 强制设为 50
+  // v5: 更新任务列表为最新版
   let changed = false;
   const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
-  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
+  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7','w8','w9','w10'];
   for (let t of dailyTasks) {
     if (DAILY_BUILTIN_IDS.includes(t.id) && t.points !== 100) { t.points = 100; changed = true; }
   }
@@ -1750,8 +1762,8 @@ function migrateData() {
     if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
   }
   if (changed) {
-    sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
-    sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
+    sSet('taotao_v6_tasks_d', JSON.stringify(dailyTasks));
+    sSet('taotao_v6_tasks_w', JSON.stringify(weeklyTasks));
   }
   sSet('taotao_v5_data_ver', JSON.stringify(DATA_VERSION));
 }
@@ -2501,7 +2513,7 @@ function generateAIReply(q) { let dk = dateKey(currentDate); let ci = dailyCheck
   if (q.includes('技巧') || q.includes('方法') || q.includes('怎么学')) { let tips = ['📖 番茄工作法：学25分钟休息5分钟，效率超高！', '🧠 睡前复习：睡前30分钟复习，大脑会在睡眠中巩固记忆', '✏️ 费曼学习法：把学到的内容讲给别人听，讲不清的就是没懂的', '🎯 先难后易：精力最好的时候攻克最难的']; return '💡 ' + tips[Math.floor(Math.random() * tips.length)]; }
   if (q.includes('能量') || q.includes('分数') || q.includes('多少分')) return '🏆 你目前累计 ' + totalPoints + ' 能量，今天获得 ' + calcTodayPoints() + ' 能量。\n还有 ' + drawsAvailable + ' 次抽卡机会！';
   if (q.includes('抽卡') || q.includes('权益卡') || q.includes('卡片')) return '🎴 你还有 ' + drawsAvailable + ' 次抽卡机会！已有 ' + Object.keys(collection).filter(k => collection[k] > 0).length + ' 种权益卡。\n1500能量兑换1次，快去看看权益卡页面吧～';
-  if (q.includes('pk') || q.includes('课表') || q.includes('今晚')) { let wd = WEEKDAY_NAMES[currentDate.getDay()]; let sched = PK_SCHEDULE[wd] || []; if (sched.length === 0) return '今天没有PK安排，好好休息吧～'; return '⚔️ 今晚PK安排：\n' + sched.map(e => e.time + ' ' + e.subject).join('\n'); }
+  if (q.includes('pk') || q.includes('课表') || q.includes('今晚') || q.includes('今天')) { let wd = WEEKDAY_NAMES[currentDate.getDay()]; let sched = PK_SCHEDULE[wd] || []; if (sched.length === 0) return '今天没有课表安排，好好休息吧～'; return '📅 今日课表：\n' + sched.map(e => e.time + ' ' + e.icon + ' ' + e.subject).join('\n'); }
   if (q.includes('许愿') || q.includes('愿望')) { let activeWishes = wishes.filter(w => w.current < w.target); if (activeWishes.length === 0) return '🌟 所有愿望都实现了吗？太厉害了！'; return '🌟 你还有 ' + activeWishes.length + ' 个愿望在进行中：\n' + activeWishes.slice(0, 3).map(w => w.icon + ' ' + w.name + ' (' + w.current + '/' + w.target + ')').join('\n'); }
   if (q.includes('hello') || q.includes('你好') || q.includes('嗨')) return '你好韬韬！🦞 我是龙虾助手～咔嚓咔嚓！\n有什么需要帮忙的吗？';
   let defaults = ['咔嚓！分析完毕。坚持就是胜利，继续加油韬韬！💪', '这是个好问题！龙虾建议你先专注完成今天的打卡任务哦～', '收到！🦞 每一天的努力都不会白费！', '明白了！龙虾助手会一直陪着你～有什么问题随时找我！'];
@@ -2538,6 +2550,7 @@ function doResetAll() {
 
   // 清除所有 localStorage 数据
   const keys = [
+    'taotao_v6_tasks_d', 'taotao_v6_tasks_w',
     'taotao_v5_tasks_d', 'taotao_v5_tasks_w',
     'taotao_v5_checkins_d', 'taotao_v5_checkins_w', 'taotao_v5_checkins_pk',
     'taotao_v5_points', 'taotao_v5_draws', 'taotao_v5_draw_history',
