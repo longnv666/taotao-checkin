@@ -1055,23 +1055,11 @@ body > * { position: relative; z-index: 1; }
 </svg>
 </div>
 
-<!-- 保存/导入按钮（左上角） -->
-<div style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px;align-items:center;">
-  <button id="saveBtn" onclick="doSave()" style="padding:8px 16px;border-radius:20px;border:2px solid #FF6B35;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;font-size:0.8rem;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(255,107,53,0.4);">🦞 保存</button>
-  <button onclick="document.getElementById('importFileInput').click()" style="padding:7px 12px;border-radius:16px;border:2px solid #2196F3;background:rgba(255,255,255,0.95);color:#1976D2;font-size:0.75rem;font-weight:bold;cursor:pointer;">📥 导入</button>
-  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="doImport(this.files[0])">
-</div>
-<!-- 保存状态提示 -->
-<div id="saveToast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-size:0.85rem;font-weight:bold;color:#fff;z-index:9999;display:none;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.25);"></div>
-
 <!-- HEADER -->
-<div class="header" style="padding-top:52px;">
+<div class="header">
   <h1>🌿 韬韬学习打卡表 🌿</h1>
   <p class="subtitle" id="headerTip">今天也要加油哦～</p>
 </div>
-
-<!-- 存储状态提示条 -->
-<div id="storageNotice" style="max-width:370px;margin:0 auto 10px;padding:8px 14px;border-radius:12px;font-size:0.75rem;text-align:center;display:none;"></div>
 
 <!-- POINTS BAR -->
 <div class="points-bar">
@@ -1191,17 +1179,17 @@ body > * { position: relative; z-index: 1; }
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FF1744,#B71C1C);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SSR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">传说级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">10%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">3%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#2979FF,#0D47A1);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">稀有级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">30%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">4%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FFAB91,#E64A19);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">R</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">普通级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">60%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">93%</div>
         </div>
       </div>
     </div>
@@ -1363,13 +1351,15 @@ body > * { position: relative; z-index: 1; }
   </div>
   <div class="ai-quick-btns" id="aiQuickBtns">
     <button onclick="aiQuick('analyze')">🔍 今日分析</button>
-    <button onclick="aiQuick('encourage')">💬 来点鼓励</button>
+    <button onclick="aiQuick('encourage')">💬 鼓励</button>
+    <button onclick="aiQuick('pk')">⚔️ PK安排</button>
     <button onclick="aiQuick('tip')">💡 学习技巧</button>
-    <button onclick="aiQuick('report')">📋 周报</button>
+    <button onclick="aiQuick('card')">🎴 抽卡</button>
+    <button onclick="aiQuick('joke')">😂 笑话</button>
   </div>
   <div class="ai-chat-msgs" id="aiChatMsgs">
     <div class="ai-chat-msg assistant">
-      <div class="bubble">你好韬韬！我是龙虾助手 🦞<br>咔嚓咔嚓～有什么需要帮忙的吗？</div>
+      <div class="bubble">🦞 咔嚓咔嚓！你好韬韬！我是龙虾学习助手～<br>我能帮你分析每日进度、查看PK安排、给你鼓励、讲笑话...<br>快试试下面的按钮吧！👇</div>
     </div>
   </div>
   <div class="ai-chat-input-row">
@@ -1573,21 +1563,27 @@ const CARD_POOL = [
     desc: '凹凸世界 · 限定卡' }
 ];
 
-// 抽卡概率：传说级5%，稀有级6%，普通级89%（普通级只含R1~R4）
+// 抽卡概率：传说级3%，稀有级4%，普通级93%（普通级只含R1~R4，R1/R2权重更高）
 function weightedDrawCard() {
   let rand = Math.random();
-  if (rand < 0.05) {
-    // 传说级：SSR + 限定
+  if (rand < 0.03) {
+    // 传说级：SSR + 限定（3%）
     let pool = CARD_POOL.filter(c => c.rarity === 'SSR' || c.rarity === '限定');
     return pool[Math.floor(Math.random() * pool.length)];
-  } else if (rand < 0.11) {
-    // 稀有级：SR
+  } else if (rand < 0.07) {
+    // 稀有级：SR（4%）
     let pool = CARD_POOL.filter(c => c.rarity === 'SR');
     return pool[Math.floor(Math.random() * pool.length)];
   } else {
-    // 普通级：只含 R1~R4
-    let pool = CARD_POOL.filter(c => c.rarity === 'R' && ['r1','r2','r3','r4'].includes(c.id));
-    return pool[Math.floor(Math.random() * pool.length)];
+    // 普通级：R1~R4，R1/R2权重更高（93%）
+    // 权重：R1=35%, R2=35%, R3=15%, R4=15%
+    let r = Math.random();
+    let id;
+    if (r < 0.35) id = 'r1';
+    else if (r < 0.70) id = 'r2';
+    else if (r < 0.85) id = 'r3';
+    else id = 'r4';
+    return CARD_POOL.find(c => c.id === id);
   }
 }
 
@@ -1689,139 +1685,6 @@ function sSet(k, v) {
 
 // ============ 保存/导入（可靠方案） ============
 // 保存：存localStorage + 下载JSON备份文件
-function doSave() {
-  // 1. 存localStorage
-  try { saveAll(); } catch(e) { console.log('localStorage保存失败', e); }
-
-  // 2. 组装所有数据
-  var data = {
-    version: 'final-v1',
-    date: new Date().toISOString(),
-    dailyTasks: dailyTasks,
-    weeklyTasks: weeklyTasks,
-    dailyCheckins: dailyCheckins,
-    weeklyCheckins: weeklyCheckins,
-    pkCheckins: pkCheckins,
-    totalPoints: totalPoints,
-    drawsAvailable: drawsAvailable,
-    drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
-    drawHistory: drawHistory,
-    collection: collection,
-    wishes: wishes,
-    wishEnergy: wishEnergy,
-    claimHistory: claimHistory,
-    aiFloatY: aiFloatY
-  };
-
-  // 3. 下载JSON文件
-  var json = JSON.stringify(data, null, 2);
-  var blob = new Blob([json], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  var today = new Date();
-  var fname = '韬韬打卡备份_' + today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate()) + '.json';
-  a.href = url;
-  a.download = fname;
-  a.click();
-  URL.revokeObjectURL(url);
-
-  // 4. 视觉反馈
-  showSaveToast('✅ 保存成功！备份文件已下载', '#4CAF50');
-  // 按钮动画
-  var btn = document.getElementById('saveBtn');
-  if (btn) {
-    btn.innerHTML = '✅ 已保存';
-    btn.style.background = 'linear-gradient(135deg,#4CAF50,#388E3C)';
-    btn.style.borderColor = '#388E3C';
-    setTimeout(function() {
-      btn.innerHTML = '🦞 保存';
-      btn.style.background = 'linear-gradient(135deg,#FF8C42,#FF6B35)';
-      btn.style.borderColor = '#FF6B35';
-    }, 2000);
-  }
-}
-
-// 导入：读取JSON备份文件并恢复数据
-function doImport(file) {
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var data = JSON.parse(e.target.result);
-      // 恢复数据
-      if (data.dailyTasks) dailyTasks = data.dailyTasks;
-      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
-      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
-      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
-      if (data.pkCheckins) pkCheckins = data.pkCheckins;
-      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
-      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
-      if (data.drawHistory) drawHistory = data.drawHistory;
-      if (data.collection) collection = data.collection;
-      if (data.wishes) wishes = data.wishes;
-      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
-      if (data.claimHistory) claimHistory = data.claimHistory;
-      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
-      // 恢复抽卡网格
-      if (data.drawGridCards) {
-        drawGridCards = data.drawGridCards.map(function(s) {
-          return {
-            card: s.cardId ? CARD_POOL.find(function(c) { return c.id === s.cardId; }) || null : null,
-            flipped: s.flipped,
-            animating: s.animating
-          };
-        });
-      }
-      // 保存到localStorage
-      try { saveAll(); } catch(e) {}
-      // 刷新界面
-      renderCurrentTab();
-      updatePointsUI();
-      showSaveToast('✅ 导入成功！数据已恢复', '#4CAF50');
-    } catch(err) {
-      showSaveToast('❌ 导入失败：文件格式错误', '#F44336');
-      console.error('导入失败', err);
-    }
-  };
-  reader.readAsText(file);
-}
-
-//  toast提示
-function showSaveToast(msg, color) {
-  var el = document.getElementById('saveToast');
-  if (!el) return;
-  el.textContent = msg;
-  el.style.background = color || '#4CAF50';
-  el.style.display = 'block';
-  el.style.opacity = '1';
-  setTimeout(function() {
-    el.style.opacity = '0';
-    setTimeout(function() { el.style.display = 'none'; }, 400);
-  }, 2500);
-}
-
-// 检测存储状态并显示提示
-function checkStorage() {
-  var notice = document.getElementById('storageNotice');
-  if (!notice) return;
-  var isFileProtocol = (window.location.protocol === 'file:');
-  if (isFileProtocol) {
-    notice.style.display = 'block';
-    notice.style.background = 'rgba(255,235,200,0.95)';
-    notice.style.color = '#E65100';
-    notice.style.border = '1px solid #FFB74D';
-    notice.innerHTML = '⚠️ 当前为文件模式（直接打开HTML文件），数据可能无法自动保存。<br>请每次修改后点击 <b>🦞 保存</b> 按钮下载备份文件，下次打开时点击 <b>📥 导入</b> 恢复数据。';
-  } else {
-    notice.style.display = 'block';
-    notice.style.background = 'rgba(200,235,200,0.95)';
-    notice.style.color = '#2E7D32';
-    notice.style.border = '1px solid #A5D6A7';
-    notice.innerHTML = '✅ 当前为网络模式，数据会自动保存，无需手动操作。';
-    // 3秒后自动隐藏
-    setTimeout(function() { notice.style.display = 'none'; }, 4000);
-  }
-}
-
 function saveAll() {
   sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
   sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
@@ -2595,11 +2458,36 @@ function confirmAddTask() {
 function setupAIFloat() {
   let el = document.getElementById('aiFloat'); if (!el) return;
   if (aiFloatY !== null && aiFloatY !== undefined) el.style.top = aiFloatY + 'px'; else el.style.top = '40%';
-  let startY, startTop, dragging = false;
-  el.addEventListener('pointerdown', function(e) { dragging = true; startY = e.clientY; startTop = el.getBoundingClientRect().top; el.classList.add('dragging'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
-  el.addEventListener('pointermove', function(e) { if (!dragging) return; let dy = e.clientY - startY; let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy)); el.style.top = newTop + 'px'; aiFloatY = newTop; });
-  el.addEventListener('pointerup', function(e) { if (!dragging) return; dragging = false; el.classList.remove('dragging'); el.releasePointerCapture(e.pointerId); let dy = e.clientY - startY; if (Math.abs(dy) < 5) openAIChat(); saveAll(); });
-  el.addEventListener('pointercancel', function(e) { dragging = false; el.classList.remove('dragging'); });
+  let startY, startTop, startX, dragging = false, moved = false;
+
+  el.addEventListener('pointerdown', function(e) {
+    dragging = true; moved = false;
+    startY = e.clientY; startX = e.clientX; startTop = el.getBoundingClientRect().top;
+    el.classList.add('dragging'); el.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+  });
+  el.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    let dy = e.clientY - startY; let dx = e.clientX - startX;
+    if (Math.abs(dy) > 3 || Math.abs(dx) > 3) moved = true;
+    if (moved) {
+      let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy));
+      el.style.top = newTop + 'px'; aiFloatY = newTop;
+    }
+  });
+  el.addEventListener('pointerup', function(e) {
+    if (!dragging) return;
+    dragging = false; el.classList.remove('dragging');
+    if (el.hasPointerCapture) { try { el.releasePointerCapture(e.pointerId); } catch(e) {} }
+    if (!moved) { openAIChat(); }
+    try { saveAll(); } catch(e) {}
+  });
+  el.addEventListener('pointercancel', function(e) {
+    dragging = false; moved = false;
+    el.classList.remove('dragging');
+  });
+  // 额外后备：touch + click
+  el.addEventListener('click', function(e) { if (!moved && !dragging) { e.preventDefault(); openAIChat(); } });
 }
 function openAIChat() { document.getElementById('aiChatPanel').classList.remove('hidden'); document.getElementById('chatBackdrop').classList.remove('hidden'); document.getElementById('aiFloat').style.display = 'none'; generateAIWelcome(); setTimeout(() => document.getElementById('aiChatInput').focus(), 400); }
 function closeAIChat() { document.getElementById('aiChatPanel').classList.add('hidden'); document.getElementById('chatBackdrop').classList.add('hidden'); document.getElementById('aiFloat').style.display = 'flex'; }
@@ -2618,7 +2506,25 @@ function generateAIReply(q) { let dk = dateKey(currentDate); let ci = dailyCheck
   if (q.includes('hello') || q.includes('你好') || q.includes('嗨')) return '你好韬韬！🦞 我是龙虾助手～咔嚓咔嚓！\n有什么需要帮忙的吗？';
   let defaults = ['咔嚓！分析完毕。坚持就是胜利，继续加油韬韬！💪', '这是个好问题！龙虾建议你先专注完成今天的打卡任务哦～', '收到！🦞 每一天的努力都不会白费！', '明白了！龙虾助手会一直陪着你～有什么问题随时找我！'];
   return defaults[Math.floor(Math.random() * defaults.length)]; }
-function aiQuick(type) { let q; switch (type) { case 'analyze': q = '今天进度怎么样'; break; case 'encourage': q = '给我点鼓励'; break; case 'tip': q = '有什么学习技巧'; break; case 'report': q = '我的能量'; break; default: q = '你好'; } addAIMsg(q, 'user'); setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); }, 500); }
+function aiQuick(type) {
+  let msgs = document.getElementById('aiChatMsgs');
+  let q;
+  switch (type) {
+    case 'analyze': q = '今天进度怎么样'; break;
+    case 'encourage': q = '给我点鼓励'; break;
+    case 'tip': q = '有什么学习技巧'; break;
+    case 'report': q = '我的能量'; break;
+    case 'card': q = '抽卡'; break;
+    case 'joke': q = '讲个笑话'; break;
+    case 'pk': q = 'PK'; break;
+    case 'quote': q = '名言'; break;
+    case 'wish': q = '许愿'; break;
+    case 'homework': q = '作业'; break;
+    default: q = '你好';
+  }
+  addAIMsg(q, 'user');
+  setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); updateAIBadge(); }, 400 + Math.random() * 300);
+}
 
 // ============ RESET ============
 function showResetConfirm() {
@@ -2750,8 +2656,6 @@ function init() {
   } catch(e){}
   renderAll();
   spawnLeaves('tab-daily');
-  // 检测并显示存储状态
-  checkStorage();
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
