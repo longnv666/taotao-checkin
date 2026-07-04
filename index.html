@@ -1417,15 +1417,15 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 // ============ DATA ============
 const DEFAULT_DAILY_TASKS = [
-  { id: 'd1', label: '早上起床晨读（文言文·英语2000词·名著单词·语文课本字词先读后组词写出来）', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd1', label: '起床晨读（文言文·英语2000词·名著单词·语文字词先读后组词）', emoji: '🌅', points: 100, builtin: true },
   { id: 'd2', label: '语文练字', emoji: '✍️', points: 100, builtin: true },
-  { id: 'd3', label: '①每天一页英语精读：豆包辅导精读名著', emoji: '📖', points: 100, builtin: true },
-  { id: 'd4', label: '②Raz（或神奇树屋）每天一篇', emoji: '📚', points: 100, builtin: true },
-  { id: 'd5', label: '③Tiddy口语每天一篇', emoji: '🗣️', points: 100, builtin: true },
-  { id: 'd6', label: '④可可英语每天一篇', emoji: '🎧', points: 100, builtin: true },
-  { id: 'd7', label: '新闻知天下每天一篇（复制感兴趣新闻·豆包引导思辨性思考）', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd3', label: '英语精读（豆包辅导精读名著）×1页', emoji: '📖', points: 100, builtin: true },
+  { id: 'd4', label: 'Raz/神奇树屋 ×1篇', emoji: '📚', points: 100, builtin: true },
+  { id: 'd5', label: 'Tiddy口语 ×1篇', emoji: '🗣️', points: 100, builtin: true },
+  { id: 'd6', label: '可可英语 ×1篇', emoji: '🎧', points: 100, builtin: true },
+  { id: 'd7', label: '新闻知天下 ×1篇（复制感兴趣新闻·豆包引导思辨思考）', emoji: '🌍', points: 100, builtin: true },
   { id: 'd8', label: '家庭家务', emoji: '🏠', points: 100, builtin: true },
-  { id: 'd9', label: '自己家务', emoji: '🧹', points: 100, builtin: true },
+  { id: 'd9', label: '自己家务（洗袜子等）', emoji: '🧹', points: 100, builtin: true },
   { id: 'd10', label: '晚上9:45刷牙·看书（中英文阅读）·睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
@@ -1746,14 +1746,13 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 6;
+  const DATA_VERSION = 5;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
 
+  // v5: 更新任务列表为最新版
   let changed = false;
-
-  // v5: 更新任务积分
   const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
   const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7','w8','w9','w10'];
   for (let t of dailyTasks) {
@@ -1762,13 +1761,6 @@ function migrateData() {
   for (let t of weeklyTasks) {
     if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
   }
-
-  // v6: 更新每日任务标签为最新内容
-  for (let t of dailyTasks) {
-    const def = DEFAULT_DAILY_TASKS.find(d => d.id === t.id);
-    if (def && t.label !== def.label) { t.label = def.label; changed = true; }
-  }
-
   if (changed) {
     sSet('taotao_v6_tasks_d', JSON.stringify(dailyTasks));
     sSet('taotao_v6_tasks_w', JSON.stringify(weeklyTasks));
