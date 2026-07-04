@@ -1417,16 +1417,16 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 // ============ DATA ============
 const DEFAULT_DAILY_TASKS = [
-  { id: 'd1', label: '早上起床晨读', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd1', label: '早上起床晨读（文言文·英语2000词·名著单词·语文课本字词先读后组词写出来）', emoji: '🌅', points: 100, builtin: true },
   { id: 'd2', label: '语文练字', emoji: '✍️', points: 100, builtin: true },
   { id: 'd3', label: '①每天一页英语精读：豆包辅导精读名著', emoji: '📖', points: 100, builtin: true },
-  { id: 'd4', label: '②Raz每天一篇', emoji: '📚', points: 100, builtin: true },
+  { id: 'd4', label: '②Raz（或神奇树屋）每天一篇', emoji: '📚', points: 100, builtin: true },
   { id: 'd5', label: '③Tiddy口语每天一篇', emoji: '🗣️', points: 100, builtin: true },
   { id: 'd6', label: '④可可英语每天一篇', emoji: '🎧', points: 100, builtin: true },
-  { id: 'd7', label: '新闻知天下每天一篇', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd7', label: '新闻知天下每天一篇（复制感兴趣新闻·豆包引导思辨性思考）', emoji: '🌍', points: 100, builtin: true },
   { id: 'd8', label: '家庭家务', emoji: '🏠', points: 100, builtin: true },
   { id: 'd9', label: '自己家务', emoji: '🧹', points: 100, builtin: true },
-  { id: 'd10', label: '晚上9:45刷牙·看书·睡觉', emoji: '😴', points: 100, builtin: true }
+  { id: 'd10', label: '晚上9:45刷牙·看书（中英文阅读）·睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
   { id: 'w1', label: '数学思维导图（周一）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
@@ -1746,7 +1746,7 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 7;
+  const DATA_VERSION = 6;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
