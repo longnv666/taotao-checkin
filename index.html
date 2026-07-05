@@ -757,6 +757,9 @@ body > * { position: relative; z-index: 1; }
     .drag-handle:hover { color: var(--accent); }
     .task-item.dragging { opacity: 0.5; }
     .task-item.drag-over { background: rgba(255,140,66,0.08); border-top: 2px dashed var(--accent); }
+    .weekly-item.dragging { opacity: 0.5; }
+    .weekly-item.drag-over { background: rgba(255,140,66,0.08); border-top: 2px dashed var(--accent); border-radius: 8px; }
+    .weekly-item .drag-handle { float: left; margin-right: 8px; margin-top: 1px; }
   </style>
 </head>
 <body>
@@ -1451,10 +1454,10 @@ const DEFAULT_DAILY_TASKS = [
   { id: 'd11', label: '22:15睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
-  { id: 'w1', label: '数学思维导图（周一）', emoji: '🔢', target: 1, unit: '个', points: 200, builtin: true },
-  { id: 'w2', label: '数学习题（周三，核对答案）', emoji: '✏️', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w3', label: '物理课本预习（周四）', emoji: '🔬', target: 1, unit: '节', points: 200, builtin: true },
-  { id: 'w4', label: '物理习题（周五，核对答案）', emoji: '⚙️', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w1', label: '数学思维导图（周一晚PK）', emoji: '🔢', target: 1, unit: '个', points: 200, builtin: true },
+  { id: 'w2', label: '数学习题（周三晚PK）', emoji: '✏️', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w3', label: '物理课本预习提问+习题（周四晚PK）', emoji: '🔬', target: 1, unit: '节', points: 200, builtin: true },
+  { id: 'w4', label: '物理课本预习提问+习题（周五晚PK）', emoji: '⚙️', target: 1, unit: '份', points: 200, builtin: true },
   { id: 'w5', label: '语文课本预习（精读课文，回答预习题目）', emoji: '📖', target: 1, unit: '课', points: 200, builtin: true },
   { id: 'w6', label: 'RAZ（或神奇树屋）', emoji: '📚', target: 5, unit: '篇', points: 200, builtin: true },
   { id: 'w7', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
@@ -1783,7 +1786,7 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 15;
+  const DATA_VERSION = 16;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
@@ -1807,6 +1810,13 @@ function migrateData() {
   // 新增 w13, w14
   if (!weeklyTasks.find(t => t.id === 'w13')) { weeklyTasks.push({ id: 'w13', label: '世界历史PK前跨学科思考（周三晚PK）', emoji: '🧩', target: 1, unit: '次', points: 200, builtin: true }); changed = true; }
   if (!weeklyTasks.find(t => t.id === 'w14')) { weeklyTasks.push({ id: 'w14', label: '世界历史PK前思辨性思考（周日晚PK）', emoji: '🌍', target: 1, unit: '次', points: 200, builtin: true }); changed = true; }
+  // v16: 强制更新 w1-w4 的label
+  for (let t of weeklyTasks) {
+    if (t.id === 'w1') { t.label = '数学思维导图（周一晚PK）'; changed = true; }
+    if (t.id === 'w2') { t.label = '数学习题（周三晚PK）'; changed = true; }
+    if (t.id === 'w3') { t.label = '物理课本预习提问+习题（周四晚PK）'; changed = true; }
+    if (t.id === 'w4') { t.label = '物理课本预习提问+习题（周五晚PK）'; changed = true; }
+  }
   if (changed) {
     sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
     sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
@@ -1855,9 +1865,12 @@ function handleDailyDragStart(e) { dailyDragIdx = parseInt(this.dataset.idx); th
 function handleDailyDrop(e) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over'); let dstIdx = parseInt(this.dataset.idx); if(dailyDragIdx===dstIdx||dailyDragIdx<0) return; let item = dailyTasks.splice(dailyDragIdx,1)[0]; dailyTasks.splice(dstIdx,0,item); dailyDragIdx=-1; saveAll(); renderDaily(); }
 
 // ============ RENDER WEEKLY ============
-function renderWeekly() { let c=document.getElementById('weeklyCard'); if(!c) return; let wk=weekKey(currentDate); let data=weeklyCheckins[wk]||{}; let h=''; for(let i=0;i<weeklyTasks.length;i++) { let t=weeklyTasks[i]; let cur=data[t.id]||0; let pct=Math.min(100,Math.round((cur/t.target)*100)); let fc=cur>=t.target?'done':cur>0?'in-progress':'empty'; let dm=cur>=t.target?' ✅':''; let db=!t.builtin?'<button class="weekly-del" onclick="deleteWeeklyTask(\''+t.id+'\')">✕</button>':''; h+='<div class="weekly-item"><div class="wlabel"><span>'+t.emoji+' '+t.label+db+'</span><span class="'+(cur>=t.target?'wlabel-done':'')+'">'+cur+'/'+t.target+t.unit+dm+'</span></div><div class="progress-bg"><div class="progress-fill '+fc+'" style="width:'+pct+'%"></div></div><div class="pct-label">'+(t.points||200)+'能量/次 · '+pct+'%</div><div class="weekly-btns"><button onclick="weeklyChange(\''+t.id+'\',-1)">➖</button><button onclick="weeklyChange(\''+t.id+'\',1)">➕</button></div></div>'; } c.innerHTML=h; }
+function renderWeekly() { let c=document.getElementById('weeklyCard'); if(!c) return; let wk=weekKey(currentDate); let data=weeklyCheckins[wk]||{}; let h=''; for(let i=0;i<weeklyTasks.length;i++) { let t=weeklyTasks[i]; let cur=data[t.id]||0; let pct=Math.min(100,Math.round((cur/t.target)*100)); let fc=cur>=t.target?'done':cur>0?'in-progress':'empty'; let dm=cur>=t.target?' ✅':''; let db=!t.builtin?'<button class="weekly-del" onclick="deleteWeeklyTask(\''+t.id+'\')">✕</button>':''; h+='<div class="weekly-item" data-widx="'+i+'" draggable="true"><span class="drag-handle" draggable="false">⋮⋮</span><div class="wlabel"><span>'+t.emoji+' '+t.label+db+'</span><span class="'+(cur>=t.target?'wlabel-done':'')+'">'+cur+'/'+t.target+t.unit+dm+'</span></div><div class="progress-bg"><div class="progress-fill '+fc+'" style="width:'+pct+'%"></div></div><div class="pct-label">'+(t.points||200)+'能量/次 · '+pct+'%</div><div class="weekly-btns"><button onclick="weeklyChange(\''+t.id+'\',-1)">➖</button><button onclick="weeklyChange(\''+t.id+'\',1)">➕</button></div></div>'; } c.innerHTML=h; c.querySelectorAll('.weekly-item').forEach(el=>{ el.addEventListener('dragstart',handleWeeklyDragStart); el.addEventListener('dragover',function(e){ e.preventDefault(); this.classList.add('drag-over'); }); el.addEventListener('dragleave',function(e){ this.classList.remove('drag-over'); }); el.addEventListener('drop',handleWeeklyDrop); el.addEventListener('dragend',function(e){ this.classList.remove('dragging'); }); }); }
 function deleteWeeklyTask(tid) { let t=weeklyTasks.find(x=>x.id===tid); if(!t||t.builtin) return; weeklyTasks=weeklyTasks.filter(x=>x.id!==tid); saveAll(); renderWeekly(); recalcPoints(); renderPointsBar(); }
 function weeklyChange(tid,delta) { let wk=weekKey(currentDate); if(!weeklyCheckins[wk]) weeklyCheckins[wk]={}; let cur=weeklyCheckins[wk][tid]||0; let next=cur+delta; if(next<0) return; weeklyCheckins[wk][tid]=next; if(delta>0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(next>=(t?t.target:1)) { let idx=weeklyTasks.findIndex(x=>x.id===tid); let el=document.querySelector('#weeklyCard .weekly-item:nth-child('+(idx+1)+')'); if(el) spawnParticles(el); } } else if(delta<0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints=Math.max(0,totalPoints-pts); } saveAll(); renderWeekly(); renderPointsBar(); updateAIBadge(); }
+let weeklyDragIdx = -1;
+function handleWeeklyDragStart(e) { weeklyDragIdx = parseInt(this.dataset.widx); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function handleWeeklyDrop(e) { e.preventDefault(); e.stopPropagation(); this.classList.remove('drag-over'); let dstIdx = parseInt(this.dataset.widx); if(weeklyDragIdx===dstIdx||weeklyDragIdx<0) return; let item = weeklyTasks.splice(weeklyDragIdx,1)[0]; weeklyTasks.splice(dstIdx,0,item); weeklyDragIdx=-1; saveAll(); renderWeekly(); }
 
 // ============ RENDER PK ============
 function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let th=hobbyCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let pkEvts=PK_SCHEDULE[day]||[]; let hbEvts=HOBBY_SCHEDULE[day]||[]; let combined=[]; pkEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:true,idx:i,points:1000}); }); hbEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:false,idx:i,points:e.points||500,endTime:e.endTime||null}); }); combined.sort(function(a,b){ return a.time.localeCompare(b.time); }); let isCur=day===wd; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<combined.length;i++) { let e=combined[i]; let done=isCur?(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)):false; let timeStr=e.endTime?e.time+'~'+e.endTime:e.time; let onclick=e.isPK?'togglePK('+e.idx+')':'toggleHobby('+e.idx+')'; h+='<div class="pk-event"><span class="pk-time">'+timeStr+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'; if(isCur){ h+='<button class="pk-check-btn'+(done?' done':'')+'" onclick="'+onclick+'">'+(done?'✓':'')+'</button>'; } else { let wasDone=(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)); if(wasDone) h+='<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>'; } h+='</div>'; } h+='</div>'; } c.innerHTML=h; }
