@@ -198,12 +198,6 @@ body > * { position: relative; z-index: 1; }
 .task-item .task-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: transparent; color: #bbb; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 2px; margin-right: 2px; opacity: 0; transition: all 0.2s; flex-shrink: 0; }
 .task-item:hover .task-del { opacity: 1; color: var(--red); }
 .task-item .task-del:active { transform: scale(1.2); }
-.task-item .drag-handle { width: 22px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: grab; flex-shrink: 0; margin-right: 2px; color: #ccc; font-size: 1.1rem; opacity: 0.4; transition: opacity 0.2s; touch-action: none; }
-.task-item:hover .drag-handle { opacity: 1; color: #999; }
-.task-item .drag-handle:active { cursor: grabbing; }
-.task-item.dragging { opacity: 0.4; background: rgba(168,213,162,0.3); }
-.task-item.drag-over-top { border-top: 3px solid var(--green-mid); margin-top: -2px; }
-.task-item.drag-over-bottom { border-bottom: 3px solid var(--green-mid); margin-bottom: -2px; }
 
 /* Weekly Tasks */
 .weekly-item { margin-bottom: 16px; position: relative; }
@@ -750,7 +744,19 @@ body > * { position: relative; z-index: 1; }
 @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
 .chat-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 240; animation: fadeIn 0.2s ease; }
 .chat-backdrop.hidden { display: none; }
-</style>
+
+    /* 拖拽手柄 */
+    .drag-handle {
+      cursor: grab;
+      color: #bbb;
+      font-size: 1.1rem;
+      user-select: none;
+      margin-right: 6px;
+      transition: color 0.2s;
+    }
+    .drag-handle:hover { color: var(--accent); }
+    .task-item.dragging { opacity: 0.5; }
+  </style>
 </head>
 <body>
 <!-- 存储状态指示器 -->
@@ -1061,11 +1067,23 @@ body > * { position: relative; z-index: 1; }
 </svg>
 </div>
 
+<!-- 保存/导入按钮（左上角） -->
+<div style="position:fixed;top:10px;left:10px;z-index:999;display:flex;gap:6px;align-items:center;">
+  <button id="saveBtn" onclick="doSave()" style="padding:8px 16px;border-radius:20px;border:2px solid #FF6B35;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;font-size:0.8rem;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(255,107,53,0.4);">🦞 保存</button>
+  <button onclick="document.getElementById('importFileInput').click()" style="padding:7px 12px;border-radius:16px;border:2px solid #2196F3;background:rgba(255,255,255,0.95);color:#1976D2;font-size:0.75rem;font-weight:bold;cursor:pointer;">📥 导入</button>
+  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="doImport(this.files[0])">
+</div>
+<!-- 保存状态提示 -->
+<div id="saveToast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:14px;font-size:0.85rem;font-weight:bold;color:#fff;z-index:9999;display:none;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.25);"></div>
+
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="padding-top:52px;">
   <h1>🌿 韬韬学习打卡表 🌿</h1>
   <p class="subtitle" id="headerTip">今天也要加油哦～</p>
 </div>
+
+<!-- 存储状态提示条 -->
+<div id="storageNotice" style="max-width:370px;margin:0 auto 10px;padding:8px 14px;border-radius:12px;font-size:0.75rem;text-align:center;display:none;"></div>
 
 <!-- POINTS BAR -->
 <div class="points-bar">
@@ -1097,7 +1115,7 @@ body > * { position: relative; z-index: 1; }
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('daily')">📝 每日任务</button>
   <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
-  <button class="tab" onclick="switchTab('pk')">⚔️ PK兴趣课</button>
+  <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
   <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
 </div>
 
@@ -1131,11 +1149,11 @@ body > * { position: relative; z-index: 1; }
   <button class="reset-btn" onclick="showResetConfirm()">🔄 恢复默认设置</button>
 </div>
 
-<!-- ===== TAB: PK + Hobby merged by day ===== -->
+<!-- ===== TAB: PK ===== -->
 <div id="tab-pk" class="tab-content">
   <div class="leaves-area" id="leaves-tab-pk"></div>
   <div class="section-header">
-    <div class="section-title">⚔️ PK兴趣课 · 按天打卡</div>
+    <div class="section-title">⚔️ 每晚PK战场 · 完成 +150能量</div>
   </div>
   <div id="pkCard"></div>
 </div>
@@ -1185,17 +1203,17 @@ body > * { position: relative; z-index: 1; }
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FF1744,#B71C1C);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SSR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">传说级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">3%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">10%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#2979FF,#0D47A1);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">SR</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">稀有级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">4%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">30%</div>
         </div>
         <div style="flex:1;text-align:center;padding:10px 6px;border-radius:12px;background:linear-gradient(145deg,#FFAB91,#E64A19);color:white;">
           <div style="font-size:0.75rem;font-weight:900;letter-spacing:1px;">R</div>
           <div style="font-size:0.65rem;margin-top:4px;opacity:0.9;">普通级</div>
-          <div style="font-size:0.65rem;opacity:0.8;">93%</div>
+          <div style="font-size:0.65rem;opacity:0.8;">60%</div>
         </div>
       </div>
     </div>
@@ -1357,15 +1375,13 @@ body > * { position: relative; z-index: 1; }
   </div>
   <div class="ai-quick-btns" id="aiQuickBtns">
     <button onclick="aiQuick('analyze')">🔍 今日分析</button>
-    <button onclick="aiQuick('encourage')">💬 鼓励</button>
-    <button onclick="aiQuick('pk')">⚔️ PK安排</button>
+    <button onclick="aiQuick('encourage')">💬 来点鼓励</button>
     <button onclick="aiQuick('tip')">💡 学习技巧</button>
-    <button onclick="aiQuick('card')">🎴 抽卡</button>
-    <button onclick="aiQuick('joke')">😂 笑话</button>
+    <button onclick="aiQuick('report')">📋 周报</button>
   </div>
   <div class="ai-chat-msgs" id="aiChatMsgs">
     <div class="ai-chat-msg assistant">
-      <div class="bubble">🦞 咔嚓咔嚓！你好韬韬！我是龙虾学习助手～<br>我能帮你分析每日进度、查看PK安排、给你鼓励、讲笑话...<br>快试试下面的按钮吧！👇</div>
+      <div class="bubble">你好韬韬！我是龙虾助手 🦞<br>咔嚓咔嚓～有什么需要帮忙的吗？</div>
     </div>
   </div>
   <div class="ai-chat-input-row">
@@ -1418,23 +1434,14 @@ body > * { position: relative; z-index: 1; }
 <script>
 'use strict';
 
-// ============ 错误捕获（页面顶部，尽早捕获） ============
-(function(){
-  let errDiv = null;
-  function showErr(msg) {
-    if (!errDiv) {
-      errDiv = document.createElement('div');
-      errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 18px;z-index:99999;font-size:14px;line-height:1.6;';
-      errDiv.innerHTML = '<b>⚠️ 页面错误</b><br>' + msg + '<br><button onclick="location.reload()" style="margin-top:6px;padding:4px 12px;background:#fff;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">刷新页面</button> <button onclick="localStorage.clear();location.reload()" style="margin-top:6px;padding:4px 12px;background:#fff;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">清除缓存并刷新</button>';
-      document.body.appendChild(errDiv);
-    }
-  }
-  window.onerror = function(msg, src, line, col, err) {
-    showErr((msg||'') + '<br>位置：第' + (line||'?') + '行' + (col?'，第'+col+'列':'') + (err&&err.stack?'<br><small>'+err.stack.replace(/</g,'&lt;')+'</small>':''));
-    return true;
-  };
-  window.addEventListener('error', function(e) { showErr((e.message||'')+'<br>位置：'+(e.filename||'')+' 第'+(e.lineno||'?')+'行'); }, true);
-})();
+// ============ 错误处理 ============
+window.addEventListener('error', function(e) {
+  var msg = '页面错误：' + (e.message||'?') + '<br>位置：' + (e.filename||'') + ' 第' + (e.lineno||'?') + '行';
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:14px 18px;z-index:99999;font-size:14px;line-height:1.8;';
+  d.innerHTML = '⚠️ ' + msg + '<br><button onclick="localStorage.clear();location.reload()" style="margin-top:8px;padding:5px 14px;background:#fff;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">清除缓存并刷新</button>';
+  if(document.body) document.body.prepend(d);
+});
 
 // ============ 工具函数 ============
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
@@ -1499,21 +1506,34 @@ const PK_SCHEDULE = {
     { time: '20:30', subject: '语文（世界历史：PK前思考）', icon: '📖' }
   ]
 };
-const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+
 const HOBBY_SCHEDULE = {
-  '周一': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
-  '周二': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
-  '周三': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
-  '周四': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
-  '周五': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周一': [
+    { time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', points: 500 }
+  ],
+  '周二': [
+    { time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', points: 500 }
+  ],
+  '周三': [
+    { time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', points: 500 }
+  ],
+  '周四': [
+    { time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', points: 500 }
+  ],
+  '周五': [
+    { time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', points: 500 }
+  ],
   '周六': [
-    { time: '13:10', subject: '核桃编程', icon: '💻', type: 'hobby' },
-    { time: '16:15', subject: '架子鼓', icon: '🥁', type: 'hobby' }
+    { time: '13:10', subject: '核桃编程', icon: '💻', points: 500 },
+    { time: '16:15', subject: '架子鼓', icon: '🥁', points: 500 }
   ],
   '周日': [
-    { time: '15:30', subject: '核桃编程·赛考直播课', icon: '🏆', type: 'hobby', special: true, place: '7/5、7/12、7/19' }
+    { time: '15:30', subject: '核桃编程·赛考直播课（7/5、7/12、7/19）', icon: '🏆', points: 500, special: true }
   ]
 };
+
+
+const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
 const ENCOURAGE = ['太棒啦韬韬！🎉 你是最棒的！','完美的一天！🌟 继续加油！','💖 大龙龙为你骄傲！','太厉害了！🏆 继续保持！','🌈 每一份努力都不会白费！','你是超级小学生！⭐ Keep going!','🎈 做得好！继续冲冲冲！','💪 今天也要元气满满哦！'];
 const PARTICLE_COLORS = ['#4A8C3F','#7CB868','#A8D5A2','#D4E8D0','#C8DDB8','#E8C840','#D4942A','#5B9BD5','#8BC34A'];
 const EMOJI_OPTIONS = ['📖','📚','✏️','📝','🔢','🌍','🏃','🎵','🎨','🧪','🗣️','💻','🧩','🎯','⭐','🌟','🔥','💪','📺','🏛️','⚡','🗺️','🇬🇧','🧹','😴','🍎','🎒','🏆','📰','🌈','🍪','🥛','🍞'];
@@ -1609,27 +1629,21 @@ const CARD_POOL = [
     desc: '凹凸世界 · 限定卡' }
 ];
 
-// 抽卡概率：传说级3%，稀有级4%，普通级93%（普通级只含R1~R4，R1/R2权重更高）
+// 抽卡概率：传说级5%，稀有级6%，普通级89%（普通级只含R1~R4）
 function weightedDrawCard() {
   let rand = Math.random();
-  if (rand < 0.03) {
-    // 传说级：SSR + 限定（3%）
+  if (rand < 0.05) {
+    // 传说级：SSR + 限定
     let pool = CARD_POOL.filter(c => c.rarity === 'SSR' || c.rarity === '限定');
     return pool[Math.floor(Math.random() * pool.length)];
-  } else if (rand < 0.07) {
-    // 稀有级：SR（4%）
+  } else if (rand < 0.11) {
+    // 稀有级：SR
     let pool = CARD_POOL.filter(c => c.rarity === 'SR');
     return pool[Math.floor(Math.random() * pool.length)];
   } else {
-    // 普通级：R1~R4，R1/R2权重更高（93%）
-    // 权重：R1=35%, R2=35%, R3=15%, R4=15%
-    let r = Math.random();
-    let id;
-    if (r < 0.35) id = 'r1';
-    else if (r < 0.70) id = 'r2';
-    else if (r < 0.85) id = 'r3';
-    else id = 'r4';
-    return CARD_POOL.find(c => c.id === id);
+    // 普通级：只含 R1~R4
+    let pool = CARD_POOL.filter(c => c.rarity === 'R' && ['r1','r2','r3','r4'].includes(c.id));
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 }
 
@@ -1656,7 +1670,6 @@ let weeklyTasks = [...DEFAULT_WEEKLY_TASKS];
 let dailyCheckins = {};
 let weeklyCheckins = {};
 let pkCheckins = {};
-let hobbyCheckins = {};
 let totalPoints = 0;
 let drawsAvailable = 0;
 let drawHistory = [];
@@ -1732,13 +1745,145 @@ function sSet(k, v) {
 
 // ============ 保存/导入（可靠方案） ============
 // 保存：存localStorage + 下载JSON备份文件
+function doSave() {
+  // 1. 存localStorage
+  try { saveAll(); } catch(e) { console.log('localStorage保存失败', e); }
+
+  // 2. 组装所有数据
+  var data = {
+    version: 'final-v1',
+    date: new Date().toISOString(),
+    dailyTasks: dailyTasks,
+    weeklyTasks: weeklyTasks,
+    dailyCheckins: dailyCheckins,
+    weeklyCheckins: weeklyCheckins,
+    pkCheckins: pkCheckins,
+    totalPoints: totalPoints,
+    drawsAvailable: drawsAvailable,
+    drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
+    drawHistory: drawHistory,
+    collection: collection,
+    wishes: wishes,
+    wishEnergy: wishEnergy,
+    claimHistory: claimHistory,
+    aiFloatY: aiFloatY
+  };
+
+  // 3. 下载JSON文件
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var today = new Date();
+  var fname = '韬韬打卡备份_' + today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate()) + '.json';
+  a.href = url;
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  // 4. 视觉反馈
+  showSaveToast('✅ 保存成功！备份文件已下载', '#4CAF50');
+  // 按钮动画
+  var btn = document.getElementById('saveBtn');
+  if (btn) {
+    btn.innerHTML = '✅ 已保存';
+    btn.style.background = 'linear-gradient(135deg,#4CAF50,#388E3C)';
+    btn.style.borderColor = '#388E3C';
+    setTimeout(function() {
+      btn.innerHTML = '🦞 保存';
+      btn.style.background = 'linear-gradient(135deg,#FF8C42,#FF6B35)';
+      btn.style.borderColor = '#FF6B35';
+    }, 2000);
+  }
+}
+
+// 导入：读取JSON备份文件并恢复数据
+function doImport(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      // 恢复数据
+      if (data.dailyTasks) dailyTasks = data.dailyTasks;
+      if (data.weeklyTasks) weeklyTasks = data.weeklyTasks;
+      if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
+      if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
+      if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
+      if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
+      if (data.drawHistory) drawHistory = data.drawHistory;
+      if (data.collection) collection = data.collection;
+      if (data.wishes) wishes = data.wishes;
+      if (data.wishEnergy !== undefined) wishEnergy = data.wishEnergy;
+      if (data.claimHistory) claimHistory = data.claimHistory;
+      if (data.aiFloatY !== undefined) aiFloatY = data.aiFloatY;
+      // 恢复抽卡网格
+      if (data.drawGridCards) {
+        drawGridCards = data.drawGridCards.map(function(s) {
+          return {
+            card: s.cardId ? CARD_POOL.find(function(c) { return c.id === s.cardId; }) || null : null,
+            flipped: s.flipped,
+            animating: s.animating
+          };
+        });
+      }
+      // 保存到localStorage
+      try { saveAll(); } catch(e) {}
+      // 刷新界面
+      renderCurrentTab();
+      updatePointsUI();
+      showSaveToast('✅ 导入成功！数据已恢复', '#4CAF50');
+    } catch(err) {
+      showSaveToast('❌ 导入失败：文件格式错误', '#F44336');
+      console.error('导入失败', err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+//  toast提示
+function showSaveToast(msg, color) {
+  var el = document.getElementById('saveToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.background = color || '#4CAF50';
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { el.style.display = 'none'; }, 400);
+  }, 2500);
+}
+
+// 检测存储状态并显示提示
+function checkStorage() {
+  var notice = document.getElementById('storageNotice');
+  if (!notice) return;
+  var isFileProtocol = (window.location.protocol === 'file:');
+  if (isFileProtocol) {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(255,235,200,0.95)';
+    notice.style.color = '#E65100';
+    notice.style.border = '1px solid #FFB74D';
+    notice.innerHTML = '⚠️ 当前为文件模式（直接打开HTML文件），数据可能无法自动保存。<br>请每次修改后点击 <b>🦞 保存</b> 按钮下载备份文件，下次打开时点击 <b>📥 导入</b> 恢复数据。';
+  } else {
+    notice.style.display = 'block';
+    notice.style.background = 'rgba(200,235,200,0.95)';
+    notice.style.color = '#2E7D32';
+    notice.style.border = '1px solid #A5D6A7';
+    notice.innerHTML = '✅ 当前为网络模式，数据会自动保存，无需手动操作。';
+    // 3秒后自动隐藏
+    setTimeout(function() { notice.style.display = 'none'; }, 4000);
+  }
+}
+
 function saveAll() {
   sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
   sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
   sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
   sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
   sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
-  sSet('taotao_v5_checkins_hobby', JSON.stringify(hobbyCheckins));
   sSet('taotao_v5_points', JSON.stringify(totalPoints));
   sSet('taotao_v5_draws', JSON.stringify(drawsAvailable));
   // 保存抽卡网格状态（只存cardId，不存整个对象）
@@ -1753,12 +1898,11 @@ function saveAll() {
 }
 
 function loadAll() {
-  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&Array.isArray(d)&&d.length) dailyTasks=d; } catch(e){ dailyTasks=[...DEFAULT_DAILY_TASKS]; }
-  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&Array.isArray(w)&&w.length) weeklyTasks=w; } catch(e){ weeklyTasks=[...DEFAULT_WEEKLY_TASKS]; }
+  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
+  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
-  try { hobbyCheckins=JSON.parse(sGet('taotao_v5_checkins_hobby'))||{}; } catch(e){}
   try { totalPoints=JSON.parse(sGet('taotao_v5_points'))||0; } catch(e){}
   try { drawsAvailable=JSON.parse(sGet('taotao_v5_draws'))||0; } catch(e){}
   // 加载抽卡网格状态
@@ -1778,7 +1922,7 @@ function loadAll() {
   try { wishEnergy=JSON.parse(sGet('taotao_v5_wish_energy'))||0; } catch(e){}
   try { claimHistory=JSON.parse(sGet('taotao_v5_claimed'))||{}; } catch(e){}
   try { aiFloatY=JSON.parse(sGet('taotao_v5_aiY')); } catch(e){}
-  try { migrateData(); } catch(e) { console.error('migrateData error:', e); }
+  migrateData();
 }
 
 function migrateData() {
@@ -1786,22 +1930,18 @@ function migrateData() {
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
-  // Safety: ensure arrays
-  if (!Array.isArray(dailyTasks)) dailyTasks = [];
-  if (!Array.isArray(weeklyTasks)) weeklyTasks = [];
 
+  // 内置每日任务 points 强制设为 10
+  // 内置周任务 points 强制设为 50
   let changed = false;
-
-  // 强制用最新的内置每日任务覆盖旧数据（保留用户自定义任务）
-  let userDailyTasks = dailyTasks.filter(t => !t.builtin);
-  dailyTasks = [...DEFAULT_DAILY_TASKS, ...userDailyTasks];
-  changed = true;
-
-  // 强制用最新的内置周任务覆盖旧数据（保留用户自定义任务）
-  let userWeeklyTasks = weeklyTasks.filter(t => !t.builtin);
-  weeklyTasks = [...DEFAULT_WEEKLY_TASKS, ...userWeeklyTasks];
-  changed = true;
-
+  const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
+  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
+  for (let t of dailyTasks) {
+    if (DAILY_BUILTIN_IDS.includes(t.id) && t.points !== 100) { t.points = 100; changed = true; }
+  }
+  for (let t of weeklyTasks) {
+    if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
+  }
   if (changed) {
     sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
     sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
@@ -1809,18 +1949,6 @@ function migrateData() {
   sSet('taotao_v5_data_ver', JSON.stringify(DATA_VERSION));
 }
 
-// ============ RESET ============
-function resetAllData() {
-  if (!confirm('确定要重置所有数据吗？\n这将清除所有打卡记录、权益卡、能量等全部数据！')) return;
-  let keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    let k = localStorage.key(i);
-    if (k && k.startsWith('taotao_')) keys.push(k);
-  }
-  for (let k of keys) { localStorage.removeItem(k); }
-  alert('数据已重置！页面将重新加载。');
-  location.reload();
-}
 // ============ UTILS ============
 function dateKey(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function weekKey(d) { let m=new Date(d); let day=m.getDay(); let diff=m.getDate()-day+(day===0?-6:1); m.setDate(diff); return dateKey(m); }
@@ -1853,11 +1981,7 @@ function showCelebration(msg) { let el=document.getElementById('celebration'); l
 function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2300); }
 
 // ============ RENDER DAILY ============
-function renderDaily() { let c=document.getElementById('dailyCard'); if(!c) return; let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let h=''; for(let i=0;i<dailyTasks.length;i++) { let t=dailyTasks[i]; let done=ci[t.id]===1; h+='<div class="task-item'+(done?' done':'')+'" data-tid="'+t.id+'"><span class="drag-handle" data-tid="'+t.id+'">⠿</span><span class="emoji">'+t.emoji+'</span><span class="label">'+t.label+'</span><button class="task-del" data-tid="'+t.id+'" title="删除">✕</button><div class="check">'+(done?'✓':'')+'<span class="pts">+'+(t.points||100)+'能量</span></div></div>'; } c.innerHTML=h; c.querySelectorAll('.task-item').forEach(el=>{ el.addEventListener('click',function(e){ if(e.target.classList.contains('task-del')||e.target.classList.contains('drag-handle')) return; toggleDailyTask(this.dataset.tid,this); }); const handle=el.querySelector('.drag-handle'); if(handle) { handle.addEventListener('pointerdown',function(e){ e.preventDefault(); startDailyDrag(e,el); }); } }); c.querySelectorAll('.task-del').forEach(btn=>{ btn.addEventListener('click',function(e){ e.stopPropagation(); deleteDailyTask(this.dataset.tid); }); }); }
-let _dailyDragData=null;
-function startDailyDrag(e,el){e.preventDefault();el.classList.add('dragging');_dailyDragData={el:el,tid:el.dataset.tid,startX:e.clientX,startY:e.clientY,moved:false};document.addEventListener('pointermove',onDailyDragMove);document.addEventListener('pointerup',onDailyDragEnd);}
-function onDailyDragMove(e){if(!_dailyDragData)return;let dx=Math.abs(e.clientX-_dailyDragData.startX);let dy=Math.abs(e.clientY-_dailyDragData.startY);if(dx>5||dy>5)_dailyDragData.moved=true;let elBelow=document.elementFromPoint(e.clientX,e.clientY);let targetItem=elBelow?elBelow.closest('.task-item:not(.dragging)'):null;let card=document.getElementById('dailyCard');card.querySelectorAll('.task-item').forEach(item=>{if(item!==_dailyDragData.el){item.classList.remove('drag-over-top','drag-over-bottom');}});if(targetItem&&targetItem!==_dailyDragData.el){let rect=targetItem.getBoundingClientRect();let midY=rect.top+rect.height/2;if(e.clientY<midY){targetItem.classList.add('drag-over-top');}else{targetItem.classList.add('drag-over-bottom');}}}
-function onDailyDragEnd(e){if(!_dailyDragData)return;let dragEl=_dailyDragData.el;let tid=_dailyDragData.tid;if(_dailyDragData.moved){let elBelow=document.elementFromPoint(e.clientX,e.clientY);let targetItem=elBelow?elBelow.closest('.task-item:not(.dragging)'):null;if(targetItem&&targetItem!==dragEl){let rect=targetItem.getBoundingClientRect();let midY=rect.top+rect.height/2;let dragIdx=dailyTasks.findIndex(t=>t.id===tid);let targetIdx=dailyTasks.findIndex(t=>t.id===targetItem.dataset.tid);if(dragIdx>=0&&targetIdx>=0){let movedTask=dailyTasks.splice(dragIdx,1)[0];if(e.clientY<midY){dailyTasks.splice(targetIdx,0,movedTask);}else{dailyTasks.splice(targetIdx+1,0,movedTask);}saveAll();}}}dragEl.classList.remove('dragging');let card=document.getElementById('dailyCard');card.querySelectorAll('.task-item').forEach(item=>{item.classList.remove('drag-over-top','drag-over-bottom');});document.removeEventListener('pointermove',onDailyDragMove);document.removeEventListener('pointerup',onDailyDragEnd);_dailyDragData=null;renderDaily();}
+function renderDaily() { let c=document.getElementById('dailyCard'); if(!c) return; let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let h=''; for(let i=0;i<dailyTasks.length;i++) { let t=dailyTasks[i]; let done=ci[t.id]===1; h+='<div class="task-item'+(done?' done':'')+'" data-tid="'+t.id+'"><span class="emoji">'+t.emoji+'</span><span class="label">'+t.label+'</span><button class="task-del" data-tid="'+t.id+'" title="删除">✕</button><div class="check">'+(done?'✓':'')+'<span class="pts">+'+(t.points||100)+'能量</span></div></div>'; } c.innerHTML=h; c.querySelectorAll('.task-item').forEach(el=>{ el.addEventListener('click',function(e){ if(e.target.classList.contains('task-del')) return; toggleDailyTask(this.dataset.tid,this); }); }); c.querySelectorAll('.task-del').forEach(btn=>{ btn.addEventListener('click',function(e){ e.stopPropagation(); deleteDailyTask(this.dataset.tid); }); }); }
 function toggleDailyTask(tid,el) { let dk=dateKey(currentDate); if(!dailyCheckins[dk]) dailyCheckins[dk]={}; let cur=dailyCheckins[dk][tid]||0; if(cur===1) { dailyCheckins[dk][tid]=0; recalcPoints(); } else { dailyCheckins[dk][tid]=1; let t=dailyTasks.find(x=>x.id===tid); let pts=t?(t.points||100):100; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(el) { el.classList.remove('task-done-anim'); void el.offsetWidth; el.classList.add('task-done-anim'); spawnParticles(el); setTimeout(()=>el.classList.remove('task-done-anim'),800); } } saveAll(); renderDaily(); renderPointsBar(); checkDailyCelebration(); updateAIBadge(); }
 function deleteDailyTask(tid) { let t=dailyTasks.find(x=>x.id===tid); if(!t) return; if(t.builtin) { showToast('内置任务不能删除哦～'); return; } dailyTasks=dailyTasks.filter(x=>x.id!==tid); saveAll(); renderDaily(); recalcPoints(); renderPointsBar(); }
 function checkDailyCelebration() { let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let allDone=dailyTasks.length>0&&dailyTasks.every(t=>ci[t.id]===1); if(allDone) { totalPoints+=500; saveAll(); let msg=ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)]; showCelebration('🎊 全部完成！+500 能量 🎊\n\n'+msg); } }
@@ -1867,58 +1991,9 @@ function renderWeekly() { let c=document.getElementById('weeklyCard'); if(!c) re
 function deleteWeeklyTask(tid) { let t=weeklyTasks.find(x=>x.id===tid); if(!t||t.builtin) return; weeklyTasks=weeklyTasks.filter(x=>x.id!==tid); saveAll(); renderWeekly(); recalcPoints(); renderPointsBar(); }
 function weeklyChange(tid,delta) { let wk=weekKey(currentDate); if(!weeklyCheckins[wk]) weeklyCheckins[wk]={}; let cur=weeklyCheckins[wk][tid]||0; let next=cur+delta; if(next<0) return; weeklyCheckins[wk][tid]=next; if(delta>0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(next>=(t?t.target:1)) { let idx=weeklyTasks.findIndex(x=>x.id===tid); let el=document.querySelector('#weeklyCard .weekly-item:nth-child('+(idx+1)+')'); if(el) spawnParticles(el); } } else if(delta<0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints=Math.max(0,totalPoints-pts); } saveAll(); renderWeekly(); renderPointsBar(); updateAIBadge(); }
 
-// ============ RENDER PK + Hobby merged by day ============
-function renderPK() {
-  let c=document.getElementById('pkCard'); if(!c) return;
-  let wd=WEEKDAY_NAMES[currentDate.getDay()];
-  let dk=dateKey(currentDate);
-  let tp=pkCheckins[dk]||{};
-  let hp=hobbyCheckins[dk]||{};
-  let h='';
-  let dayOrder=['周一','周二','周三','周四','周五','周六','周日'];
-  for(let day of dayOrder) {
-    let pkEvts=PK_SCHEDULE[day]||[];
-    let hobbyEvts=HOBBY_SCHEDULE[day]||[];
-    let allEvts=[...pkEvts.map(e=>({...e,type:'pk'})), ...hobbyEvts.map(e=>({...e,type:'hobby'}))];
-    allEvts.sort((a,b)=>a.time.localeCompare(b.time));
-    if(allEvts.length===0) continue;
-    let isCur=day===wd;
-    h+='<div class="pk-day'+(isCur?' today':'')+'">';
-    h+='<div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>';
-    for(let i=0;i<allEvts.length;i++) {
-      let e=allEvts[i];
-      let checkStore=e.type==='pk'?tp:hp;
-      let done=isCur&&checkStore[i]===1;
-      let timeLabel=e.time+(e.endTime?'-'+e.endTime:'');
-      let ptsLabel=e.type==='pk'?'+1000':' +500';
-      let specialTag=e.special?'<span style="font-size:0.68rem;color:#D4942A;margin-left:4px;background:rgba(212,148,42,0.12);padding:1px 6px;border-radius:8px;">'+(e.place||'')+'</span>':'';
-      h+='<div class="pk-event">';
-      h+='<span class="pk-time">'+timeLabel+'</span>';
-      h+='<span class="pk-icon">'+e.icon+'</span>';
-      h+='<span class="pk-subject">'+e.subject+specialTag+' <span style="font-size:0.7rem;color:#888;">'+ptsLabel+'</span></span>';
-      if(isCur) {
-        h+='<button class="pk-check-btn'+(done?' done':'')+'" onclick="toggleEvent(''+e.type+'','+i+')">'+(done?'✓':'')+'</button>';
-      } else {
-        h+=(checkStore[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':'');
-      }
-      h+='</div>';
-    }
-    h+='</div>';
-  }
-  c.innerHTML=h;
-}
-function toggleEvent(type,idx) {
-  let dk=dateKey(currentDate);
-  if(dk!==todayKey()) { showToast('只能打卡今天的内容哦～'); return; }
-  let store=type==='pk'?pkCheckins:hobbyCheckins;
-  if(!store[dk]) store[dk]={};
-  let cur=store[dk][idx]||0;
-  let pts=type==='pk'?1000:500;
-  let label=type==='pk'?'PK':'兴趣课';
-  if(cur===1) { store[dk][idx]=0; totalPoints=Math.max(0,totalPoints-pts); }
-  else { store[dk][idx]=1; totalPoints+=pts; showToast(label+' +'+pts+' 能量！🎉'); playPop(); }
-  saveAll(); renderPK(); renderPointsBar(); updateAIBadge();
-}
+// ============ RENDER PK ============
+function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let evts=PK_SCHEDULE[day]; let isCur=day===wd; let dci=isCur?tp:{}; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<evts.length;i++) { let e=evts[i]; let done=isCur&&dci[i]===1; h+='<div class="pk-event"><span class="pk-time">'+e.time+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'+(isCur?'<button class="pk-check-btn'+(done?' done':'')+'" onclick="togglePK('+i+')">'+(done?'✓':'')+'</button>':(dci[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':''))+'</div>'; } h+='</div>'; } c.innerHTML=h; }
+function togglePK(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的PK哦～'); return; } if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
 
 // ============ RENDER POINTS BAR ============
 function renderPointsBar() { let tp=document.getElementById('todayPoints'); let totalp=document.getElementById('totalPoints'); let sd=document.getElementById('streakDays'); if(tp) tp.innerHTML='⚡ '+calcTodayPoints(); if(totalp) totalp.innerHTML='⚡ '+totalPoints; if(sd) sd.innerHTML='🔥 '+calcStreak()+'天'; }
@@ -1953,7 +2028,7 @@ function spawnLeaves(tabId) {
   }
 }
 function renderAll() { renderDate(); renderPointsBar(); renderDaily(); renderWeekly(); renderPK(); if(currentTab==='quanyi') { renderQuanyi(); } updateAIBadge(); }
-function switchTab(name) { currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.reset-btn-wrapper').forEach(w=>w.classList.remove('active')); let tm={daily:0,weekly:1,pk:2,quanyi:3}; let tabs=document.querySelectorAll('.tab'); if(tabs[tm[name]]) tabs[tm[name]].classList.add('active'); let el=document.getElementById('tab-'+name); if(el) el.classList.add('active'); let rw=document.getElementById('reset-wrapper-'+name); if(rw) rw.classList.add('active'); if(name==='quanyi') renderQuanyi(); if(name==='pk') renderPK(); spawnLeaves('tab-'+name); }
+function switchTab(name) { currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.reset-btn-wrapper').forEach(w=>w.classList.remove('active')); let tm={daily:0,weekly:1,pk:2,quanyi:3}; let tabs=document.querySelectorAll('.tab'); if(tabs[tm[name]]) tabs[tm[name]].classList.add('active'); let el=document.getElementById('tab-'+name); if(el) el.classList.add('active'); let rw=document.getElementById('reset-wrapper-'+name); if(rw) rw.classList.add('active'); if(name==='quanyi') renderQuanyi(); spawnLeaves('tab-'+name); }
 
 // ============ 权益卡子页切换 ============
 function switchQuanyiPage(page) {
@@ -1987,7 +2062,7 @@ function renderQuanyi() {
 }
 
 // ============ 抽卡页 (6张牌网格) ============
-let drawGridCards = []; // 当前1张牌 [{card, flipped, animating}]
+let drawGridCards = []; // 当前6张牌 [{card, flipped, animating}]
 
 function renderDrawPage() {
   document.getElementById('drawTabPoints').textContent = totalPoints;
@@ -2014,16 +2089,16 @@ function exchangeDrawFromTab() {
   showToast('消耗1500能量，获得1次抽卡机会！🎴');
 }
 
-// 初始化1张随机牌（背面朝上）
+// 初始化6张随机牌（背面朝上）
 function initDrawGrid() {
   drawGridCards = [];
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 6; i++) {
     drawGridCards.push({ card: null, flipped: false, animating: false });
   }
   renderDrawGrid();
 }
 
-// 渲染1张牌到网格（每张牌始终有两面：正面橙色+背面内容）
+// 渲染6张牌到网格（每张牌始终有两面：正面橙色+背面内容）
 function renderDrawGrid() {
   let grid = document.getElementById('drawCardsGrid');
   if (!grid) return;
@@ -2080,6 +2155,7 @@ function flipDrawCard(idx) {
 
   drawsAvailable--;
   saveAll();
+  renderDrawPage();
 
   // 按权重抽卡（R1/R2 概率最高）
   let reward = weightedDrawCard();
@@ -2575,36 +2651,11 @@ function confirmAddTask() {
 function setupAIFloat() {
   let el = document.getElementById('aiFloat'); if (!el) return;
   if (aiFloatY !== null && aiFloatY !== undefined) el.style.top = aiFloatY + 'px'; else el.style.top = '40%';
-  let startY, startTop, startX, dragging = false, moved = false;
-
-  el.addEventListener('pointerdown', function(e) {
-    dragging = true; moved = false;
-    startY = e.clientY; startX = e.clientX; startTop = el.getBoundingClientRect().top;
-    el.classList.add('dragging'); el.setPointerCapture(e.pointerId);
-    e.stopPropagation();
-  });
-  el.addEventListener('pointermove', function(e) {
-    if (!dragging) return;
-    let dy = e.clientY - startY; let dx = e.clientX - startX;
-    if (Math.abs(dy) > 3 || Math.abs(dx) > 3) moved = true;
-    if (moved) {
-      let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy));
-      el.style.top = newTop + 'px'; aiFloatY = newTop;
-    }
-  });
-  el.addEventListener('pointerup', function(e) {
-    if (!dragging) return;
-    dragging = false; el.classList.remove('dragging');
-    if (el.hasPointerCapture) { try { el.releasePointerCapture(e.pointerId); } catch(e) {} }
-    if (!moved) { openAIChat(); }
-    try { saveAll(); } catch(e) {}
-  });
-  el.addEventListener('pointercancel', function(e) {
-    dragging = false; moved = false;
-    el.classList.remove('dragging');
-  });
-  // 额外后备：touch + click
-  el.addEventListener('click', function(e) { if (!moved && !dragging) { e.preventDefault(); openAIChat(); } });
+  let startY, startTop, dragging = false;
+  el.addEventListener('pointerdown', function(e) { dragging = true; startY = e.clientY; startTop = el.getBoundingClientRect().top; el.classList.add('dragging'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', function(e) { if (!dragging) return; let dy = e.clientY - startY; let newTop = Math.max(60, Math.min(window.innerHeight - 120, startTop + dy)); el.style.top = newTop + 'px'; aiFloatY = newTop; });
+  el.addEventListener('pointerup', function(e) { if (!dragging) return; dragging = false; el.classList.remove('dragging'); el.releasePointerCapture(e.pointerId); let dy = e.clientY - startY; if (Math.abs(dy) < 5) openAIChat(); saveAll(); });
+  el.addEventListener('pointercancel', function(e) { dragging = false; el.classList.remove('dragging'); });
 }
 function openAIChat() { document.getElementById('aiChatPanel').classList.remove('hidden'); document.getElementById('chatBackdrop').classList.remove('hidden'); document.getElementById('aiFloat').style.display = 'none'; generateAIWelcome(); setTimeout(() => document.getElementById('aiChatInput').focus(), 400); }
 function closeAIChat() { document.getElementById('aiChatPanel').classList.add('hidden'); document.getElementById('chatBackdrop').classList.add('hidden'); document.getElementById('aiFloat').style.display = 'flex'; }
@@ -2623,25 +2674,7 @@ function generateAIReply(q) { let dk = dateKey(currentDate); let ci = dailyCheck
   if (q.includes('hello') || q.includes('你好') || q.includes('嗨')) return '你好韬韬！🦞 我是龙虾助手～咔嚓咔嚓！\n有什么需要帮忙的吗？';
   let defaults = ['咔嚓！分析完毕。坚持就是胜利，继续加油韬韬！💪', '这是个好问题！龙虾建议你先专注完成今天的打卡任务哦～', '收到！🦞 每一天的努力都不会白费！', '明白了！龙虾助手会一直陪着你～有什么问题随时找我！'];
   return defaults[Math.floor(Math.random() * defaults.length)]; }
-function aiQuick(type) {
-  let msgs = document.getElementById('aiChatMsgs');
-  let q;
-  switch (type) {
-    case 'analyze': q = '今天进度怎么样'; break;
-    case 'encourage': q = '给我点鼓励'; break;
-    case 'tip': q = '有什么学习技巧'; break;
-    case 'report': q = '我的能量'; break;
-    case 'card': q = '抽卡'; break;
-    case 'joke': q = '讲个笑话'; break;
-    case 'pk': q = 'PK'; break;
-    case 'quote': q = '名言'; break;
-    case 'wish': q = '许愿'; break;
-    case 'homework': q = '作业'; break;
-    default: q = '你好';
-  }
-  addAIMsg(q, 'user');
-  setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); updateAIBadge(); }, 400 + Math.random() * 300);
-}
+function aiQuick(type) { let q; switch (type) { case 'analyze': q = '今天进度怎么样'; break; case 'encourage': q = '给我点鼓励'; break; case 'tip': q = '有什么学习技巧'; break; case 'report': q = '我的能量'; break; default: q = '你好'; } addAIMsg(q, 'user'); setTimeout(() => { addAIMsg(generateAIReply(q), 'assistant'); }, 500); }
 
 // ============ RESET ============
 function showResetConfirm() {
@@ -2744,7 +2777,6 @@ function importData(file) {
 
 // ============ INIT ============
 function init() {
-  try {
   initStorage(); 
   // alert('存储类型：' + _storageType);  // 已删除弹出提示
   loadAll();
@@ -2774,15 +2806,8 @@ function init() {
   } catch(e){}
   renderAll();
   spawnLeaves('tab-daily');
-  } catch(initErr) {
-    let errMsg = '初始化失败：' + (initErr && initErr.message ? initErr.message : initErr);
-    if (document.body) {
-      let d = document.createElement('div');
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:16px 20px;z-index:99999;font-size:15px;line-height:1.8;';
-      d.innerHTML = '⚠️ ' + errMsg + '<br><button onclick="localStorage.clear();location.reload()" style="margin-top:8px;padding:6px 16px;background:#fff;color:#c0392b;border:none;border-radius:8px;cursor:pointer;font-size:14px;">清除缓存并刷新</button>';
-      document.body.appendChild(d);
-    }
-  }
+  // 检测并显示存储状态
+  checkStorage();
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
