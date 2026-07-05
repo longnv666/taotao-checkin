@@ -198,6 +198,12 @@ body > * { position: relative; z-index: 1; }
 .task-item .task-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: transparent; color: #bbb; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 2px; margin-right: 2px; opacity: 0; transition: all 0.2s; flex-shrink: 0; }
 .task-item:hover .task-del { opacity: 1; color: var(--red); }
 .task-item .task-del:active { transform: scale(1.2); }
+.task-item .drag-handle { width: 22px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: grab; flex-shrink: 0; margin-right: 2px; color: #ccc; font-size: 1.1rem; opacity: 0.4; transition: opacity 0.2s; touch-action: none; }
+.task-item:hover .drag-handle { opacity: 1; color: #999; }
+.task-item .drag-handle:active { cursor: grabbing; }
+.task-item.dragging { opacity: 0.4; background: rgba(168,213,162,0.3); }
+.task-item.drag-over-top { border-top: 3px solid var(--green-mid); margin-top: -2px; }
+.task-item.drag-over-bottom { border-bottom: 3px solid var(--green-mid); margin-bottom: -2px; }
 
 /* Weekly Tasks */
 .weekly-item { margin-bottom: 16px; position: relative; }
@@ -1091,7 +1097,7 @@ body > * { position: relative; z-index: 1; }
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('daily')">📝 每日任务</button>
   <button class="tab" onclick="switchTab('weekly')">📅 周任务</button>
-  <button class="tab" onclick="switchTab('pk')">⚔️ PK课表</button>
+  <button class="tab" onclick="switchTab('pk')">⚔️ PK兴趣课</button>
   <button class="tab" onclick="switchTab('quanyi')">🎴 权益卡</button>
 </div>
 
@@ -1125,11 +1131,11 @@ body > * { position: relative; z-index: 1; }
   <button class="reset-btn" onclick="showResetConfirm()">🔄 恢复默认设置</button>
 </div>
 
-<!-- ===== TAB: PK ===== -->
+<!-- ===== TAB: PK + Hobby merged by day ===== -->
 <div id="tab-pk" class="tab-content">
   <div class="leaves-area" id="leaves-tab-pk"></div>
   <div class="section-header">
-    <div class="section-title">⚔️ 每晚PK战场 · 完成 +150能量</div>
+    <div class="section-title">⚔️ PK兴趣课 · 按天打卡</div>
   </div>
   <div id="pkCard"></div>
 </div>
@@ -1417,30 +1423,36 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
 // ============ DATA ============
 const DEFAULT_DAILY_TASKS = [
-  { id: 'd1', label: '起床晨读（妈妈要抽查）', emoji: '🌅', points: 100, builtin: true },
-  { id: 'd2', label: '听课（要多点时间听英语）', emoji: '📺', points: 100, builtin: true },
-  { id: 'd3', label: 'Tiddy英语口语练习 ×1篇', emoji: '🗣️', points: 100, builtin: true },
-  { id: 'd4', label: '可可英语朗读 ×1篇', emoji: '📖', points: 100, builtin: true },
-  { id: 'd5', label: '60秒知天下（新闻）', emoji: '🌍', points: 100, builtin: true },
-  { id: 'd6', label: '跑步运动', emoji: '🏃', points: 100, builtin: true },
-  { id: 'd7', label: '完成学校作业', emoji: '✏️', points: 100, builtin: true },
-  { id: 'd8', label: '晚上9:45看书（中文书+英语书）', emoji: '📚', points: 100, builtin: true },
-  { id: 'd9', label: '洗自己的袜子', emoji: '🧦', points: 100, builtin: true },
-  { id: 'd10', label: '晚上最迟10:15睡觉', emoji: '😴', points: 100, builtin: true }
+  { id: 'd1', label: '起床晨读', emoji: '🌅', points: 100, builtin: true },
+  { id: 'd2', label: '练字', emoji: '✍️', points: 100, builtin: true },
+  { id: 'd3', label: '豆包辅导英语精读', emoji: '📖', points: 100, builtin: true },
+  { id: 'd4', label: 'Tiddy口语', emoji: '🗣️', points: 100, builtin: true },
+  { id: 'd5', label: '可可英语', emoji: '📻', points: 100, builtin: true },
+  { id: 'd6', label: '豆包引导思辨新闻知天下', emoji: '🌍', points: 100, builtin: true },
+  { id: 'd7', label: '家庭家务', emoji: '🏠', points: 100, builtin: true },
+  { id: 'd8', label: '自己家务', emoji: '🧹', points: 100, builtin: true },
+  { id: 'd9', label: '晚上9:45刷牙', emoji: '🪥', points: 100, builtin: true },
+  { id: 'd10', label: '看书', emoji: '📚', points: 100, builtin: true },
+  { id: 'd11', label: '22:15睡觉', emoji: '😴', points: 100, builtin: true }
 ];
 const DEFAULT_WEEKLY_TASKS = [
-  { id: 'w1', label: 'Tiddy新闻（五六年级）', emoji: '📰', target: 1, unit: '个', points: 200, builtin: true },
-  { id: 'w2', label: 'RAZ精读', emoji: '📚', target: 3, unit: '篇', points: 200, builtin: true },
-  { id: 'w3', label: '小咖文言文', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w4', label: '文言文写作', emoji: '✏️', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w5', label: '数学思维导图或习题（PK用）', emoji: '🔢', target: 1, unit: '份', points: 200, builtin: true },
-  { id: 'w6', label: '大语文PK任务', emoji: '📝', target: 2, unit: '个', points: 200, builtin: true },
-  { id: 'w7', label: '家务（洗碗/扫地/整理等）', emoji: '🧹', target: 5, unit: '次', points: 0, builtin: true }
+  { id: 'w1', label: '数学思维导图（周一）', emoji: '🔢', target: 1, unit: '个', points: 200, builtin: true },
+  { id: 'w2', label: '数学习题（周三，核对答案）', emoji: '✏️', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w3', label: '物理课本预习（周四）', emoji: '🔬', target: 1, unit: '节', points: 200, builtin: true },
+  { id: 'w4', label: '物理习题（周五，核对答案）', emoji: '⚙️', target: 1, unit: '份', points: 200, builtin: true },
+  { id: 'w5', label: '语文课本预习（精读课文，回答预习题目）', emoji: '📖', target: 1, unit: '课', points: 200, builtin: true },
+  { id: 'w6', label: 'RAZ（或神奇树屋）', emoji: '📚', target: 5, unit: '篇', points: 200, builtin: true },
+  { id: 'w7', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w8', label: '小咖魔力写作（五、六年级）', emoji: '📝', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w9', label: '小咖魔力精读（五、六年级）', emoji: '🔍', target: 1, unit: '篇', points: 200, builtin: true },
+  { id: 'w10', label: '世界历史PK前思辨性思考', emoji: '🌍', target: 2, unit: '次', points: 200, builtin: true },
+  { id: 'w11', label: '世界历史PK前跨学科思考', emoji: '🧩', target: 2, unit: '次', points: 200, builtin: true },
+  { id: 'w12', label: 'AI应用出产品', emoji: '🤖', target: 1, unit: '个', points: 200, builtin: true }
 ];
 const PK_SCHEDULE = {
   '周一': [
     { time: '19:00', subject: '数学 PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+    { time: '20:30', subject: '大语文（世界历史：PK前思考跨学科题目）', icon: '🏛️' }
   ],
   '周二': [
     { time: '19:00', subject: '大语文（世界人文地理）', icon: '🌍' },
@@ -1449,25 +1461,41 @@ const PK_SCHEDULE = {
   ],
   '周三': [
     { time: '19:00', subject: '数学 PK', icon: '🔢' },
-    { time: '20:30', subject: '大语文（世界历史）', icon: '🏛️' }
+    { time: '20:30', subject: '大语文（世界历史：PK前思考跨学科题目）', icon: '🏛️' }
   ],
   '周四': [
+    { time: '19:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '中文助教', icon: '📝' },
-    { time: '20:35', subject: '大语文（地理学家）', icon: '🗺️' }
+    { time: '20:35', subject: '大语文（小小地理学家：PK相互提问）', icon: '🗺️' }
   ],
   '周五': [
+    { time: '19:00', subject: '八年级物理', icon: '🔬' },
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '21:00', subject: '世界历史（准备）', icon: '📖' }
+    { time: '21:00', subject: '大语文（世界历史：PK前思考）', icon: '📖' }
   ],
   '周六': [
     { time: '20:00', subject: '英语助教', icon: '🇬🇧' },
-    { time: '20:30', subject: '世界历史', icon: '🏛️' }
+    { time: '20:30', subject: '大语文（世界历史：班班梳理）', icon: '🏛️' }
   ],
   '周日': [
-    { time: '20:30', subject: '世界历史（准备）', icon: '📖' }
+    { time: '20:30', subject: '语文（世界历史：PK前思考）', icon: '📖' }
   ]
 };
 const WEEKDAY_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+const HOBBY_SCHEDULE = {
+  '周一': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周二': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周三': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周四': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周五': [{ time: '09:00', endTime: '10:30', subject: '足球', icon: '⚽', type: 'hobby' }],
+  '周六': [
+    { time: '13:10', subject: '核桃编程', icon: '💻', type: 'hobby' },
+    { time: '16:15', subject: '架子鼓', icon: '🥁', type: 'hobby' }
+  ],
+  '周日': [
+    { time: '15:30', subject: '核桃编程·赛考直播课', icon: '🏆', type: 'hobby', special: true, place: '7/5、7/12、7/19' }
+  ]
+};
 const ENCOURAGE = ['太棒啦韬韬！🎉 你是最棒的！','完美的一天！🌟 继续加油！','💖 大龙龙为你骄傲！','太厉害了！🏆 继续保持！','🌈 每一份努力都不会白费！','你是超级小学生！⭐ Keep going!','🎈 做得好！继续冲冲冲！','💪 今天也要元气满满哦！'];
 const PARTICLE_COLORS = ['#4A8C3F','#7CB868','#A8D5A2','#D4E8D0','#C8DDB8','#E8C840','#D4942A','#5B9BD5','#8BC34A'];
 const EMOJI_OPTIONS = ['📖','📚','✏️','📝','🔢','🌍','🏃','🎵','🎨','🧪','🗣️','💻','🧩','🎯','⭐','🌟','🔥','💪','📺','🏛️','⚡','🗺️','🇬🇧','🧹','😴','🍎','🎒','🏆','📰','🌈','🍪','🥛','🍞'];
@@ -1610,6 +1638,7 @@ let weeklyTasks = [...DEFAULT_WEEKLY_TASKS];
 let dailyCheckins = {};
 let weeklyCheckins = {};
 let pkCheckins = {};
+let hobbyCheckins = {};
 let totalPoints = 0;
 let drawsAvailable = 0;
 let drawHistory = [];
@@ -1691,6 +1720,7 @@ function saveAll() {
   sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
   sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
   sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
+  sSet('taotao_v5_checkins_hobby', JSON.stringify(hobbyCheckins));
   sSet('taotao_v5_points', JSON.stringify(totalPoints));
   sSet('taotao_v5_draws', JSON.stringify(drawsAvailable));
   // 保存抽卡网格状态（只存cardId，不存整个对象）
@@ -1710,6 +1740,7 @@ function loadAll() {
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
+  try { hobbyCheckins=JSON.parse(sGet('taotao_v5_checkins_hobby'))||{}; } catch(e){}
   try { totalPoints=JSON.parse(sGet('taotao_v5_points'))||0; } catch(e){}
   try { drawsAvailable=JSON.parse(sGet('taotao_v5_draws'))||0; } catch(e){}
   // 加载抽卡网格状态
@@ -1733,22 +1764,23 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 4;
+  const DATA_VERSION = 13;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
 
-  // 内置每日任务 points 强制设为 10
-  // 内置周任务 points 强制设为 50
   let changed = false;
-  const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
-  const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
-  for (let t of dailyTasks) {
-    if (DAILY_BUILTIN_IDS.includes(t.id) && t.points !== 100) { t.points = 100; changed = true; }
-  }
-  for (let t of weeklyTasks) {
-    if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
-  }
+
+  // 强制用最新的内置每日任务覆盖旧数据（保留用户自定义任务）
+  let userDailyTasks = dailyTasks.filter(t => !t.builtin);
+  dailyTasks = [...DEFAULT_DAILY_TASKS, ...userDailyTasks];
+  changed = true;
+
+  // 强制用最新的内置周任务覆盖旧数据（保留用户自定义任务）
+  let userWeeklyTasks = weeklyTasks.filter(t => !t.builtin);
+  weeklyTasks = [...DEFAULT_WEEKLY_TASKS, ...userWeeklyTasks];
+  changed = true;
+
   if (changed) {
     sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
     sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
@@ -1800,7 +1832,11 @@ function showCelebration(msg) { let el=document.getElementById('celebration'); l
 function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2300); }
 
 // ============ RENDER DAILY ============
-function renderDaily() { let c=document.getElementById('dailyCard'); if(!c) return; let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let h=''; for(let i=0;i<dailyTasks.length;i++) { let t=dailyTasks[i]; let done=ci[t.id]===1; h+='<div class="task-item'+(done?' done':'')+'" data-tid="'+t.id+'"><span class="emoji">'+t.emoji+'</span><span class="label">'+t.label+'</span><button class="task-del" data-tid="'+t.id+'" title="删除">✕</button><div class="check">'+(done?'✓':'')+'<span class="pts">+'+(t.points||100)+'能量</span></div></div>'; } c.innerHTML=h; c.querySelectorAll('.task-item').forEach(el=>{ el.addEventListener('click',function(e){ if(e.target.classList.contains('task-del')) return; toggleDailyTask(this.dataset.tid,this); }); }); c.querySelectorAll('.task-del').forEach(btn=>{ btn.addEventListener('click',function(e){ e.stopPropagation(); deleteDailyTask(this.dataset.tid); }); }); }
+function renderDaily() { let c=document.getElementById('dailyCard'); if(!c) return; let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let h=''; for(let i=0;i<dailyTasks.length;i++) { let t=dailyTasks[i]; let done=ci[t.id]===1; h+='<div class="task-item'+(done?' done':'')+'" data-tid="'+t.id+'"><span class="drag-handle" data-tid="'+t.id+'">⠿</span><span class="emoji">'+t.emoji+'</span><span class="label">'+t.label+'</span><button class="task-del" data-tid="'+t.id+'" title="删除">✕</button><div class="check">'+(done?'✓':'')+'<span class="pts">+'+(t.points||100)+'能量</span></div></div>'; } c.innerHTML=h; c.querySelectorAll('.task-item').forEach(el=>{ el.addEventListener('click',function(e){ if(e.target.classList.contains('task-del')||e.target.classList.contains('drag-handle')) return; toggleDailyTask(this.dataset.tid,this); }); const handle=el.querySelector('.drag-handle'); if(handle) { handle.addEventListener('pointerdown',function(e){ e.preventDefault(); startDailyDrag(e,el); }); } }); c.querySelectorAll('.task-del').forEach(btn=>{ btn.addEventListener('click',function(e){ e.stopPropagation(); deleteDailyTask(this.dataset.tid); }); }); }
+let _dailyDragData=null;
+function startDailyDrag(e,el){e.preventDefault();el.classList.add('dragging');_dailyDragData={el:el,tid:el.dataset.tid,startX:e.clientX,startY:e.clientY,moved:false};document.addEventListener('pointermove',onDailyDragMove);document.addEventListener('pointerup',onDailyDragEnd);}
+function onDailyDragMove(e){if(!_dailyDragData)return;let dx=Math.abs(e.clientX-_dailyDragData.startX);let dy=Math.abs(e.clientY-_dailyDragData.startY);if(dx>5||dy>5)_dailyDragData.moved=true;let elBelow=document.elementFromPoint(e.clientX,e.clientY);let targetItem=elBelow?elBelow.closest('.task-item:not(.dragging)'):null;let card=document.getElementById('dailyCard');card.querySelectorAll('.task-item').forEach(item=>{if(item!==_dailyDragData.el){item.classList.remove('drag-over-top','drag-over-bottom');}});if(targetItem&&targetItem!==_dailyDragData.el){let rect=targetItem.getBoundingClientRect();let midY=rect.top+rect.height/2;if(e.clientY<midY){targetItem.classList.add('drag-over-top');}else{targetItem.classList.add('drag-over-bottom');}}}
+function onDailyDragEnd(e){if(!_dailyDragData)return;let dragEl=_dailyDragData.el;let tid=_dailyDragData.tid;if(_dailyDragData.moved){let elBelow=document.elementFromPoint(e.clientX,e.clientY);let targetItem=elBelow?elBelow.closest('.task-item:not(.dragging)'):null;if(targetItem&&targetItem!==dragEl){let rect=targetItem.getBoundingClientRect();let midY=rect.top+rect.height/2;let dragIdx=dailyTasks.findIndex(t=>t.id===tid);let targetIdx=dailyTasks.findIndex(t=>t.id===targetItem.dataset.tid);if(dragIdx>=0&&targetIdx>=0){let movedTask=dailyTasks.splice(dragIdx,1)[0];if(e.clientY<midY){dailyTasks.splice(targetIdx,0,movedTask);}else{dailyTasks.splice(targetIdx+1,0,movedTask);}saveAll();}}}dragEl.classList.remove('dragging');let card=document.getElementById('dailyCard');card.querySelectorAll('.task-item').forEach(item=>{item.classList.remove('drag-over-top','drag-over-bottom');});document.removeEventListener('pointermove',onDailyDragMove);document.removeEventListener('pointerup',onDailyDragEnd);_dailyDragData=null;renderDaily();}
 function toggleDailyTask(tid,el) { let dk=dateKey(currentDate); if(!dailyCheckins[dk]) dailyCheckins[dk]={}; let cur=dailyCheckins[dk][tid]||0; if(cur===1) { dailyCheckins[dk][tid]=0; recalcPoints(); } else { dailyCheckins[dk][tid]=1; let t=dailyTasks.find(x=>x.id===tid); let pts=t?(t.points||100):100; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(el) { el.classList.remove('task-done-anim'); void el.offsetWidth; el.classList.add('task-done-anim'); spawnParticles(el); setTimeout(()=>el.classList.remove('task-done-anim'),800); } } saveAll(); renderDaily(); renderPointsBar(); checkDailyCelebration(); updateAIBadge(); }
 function deleteDailyTask(tid) { let t=dailyTasks.find(x=>x.id===tid); if(!t) return; if(t.builtin) { showToast('内置任务不能删除哦～'); return; } dailyTasks=dailyTasks.filter(x=>x.id!==tid); saveAll(); renderDaily(); recalcPoints(); renderPointsBar(); }
 function checkDailyCelebration() { let dk=dateKey(currentDate); let ci=dailyCheckins[dk]||{}; let allDone=dailyTasks.length>0&&dailyTasks.every(t=>ci[t.id]===1); if(allDone) { totalPoints+=500; saveAll(); let msg=ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)]; showCelebration('🎊 全部完成！+500 能量 🎊\n\n'+msg); } }
@@ -1810,9 +1846,58 @@ function renderWeekly() { let c=document.getElementById('weeklyCard'); if(!c) re
 function deleteWeeklyTask(tid) { let t=weeklyTasks.find(x=>x.id===tid); if(!t||t.builtin) return; weeklyTasks=weeklyTasks.filter(x=>x.id!==tid); saveAll(); renderWeekly(); recalcPoints(); renderPointsBar(); }
 function weeklyChange(tid,delta) { let wk=weekKey(currentDate); if(!weeklyCheckins[wk]) weeklyCheckins[wk]={}; let cur=weeklyCheckins[wk][tid]||0; let next=cur+delta; if(next<0) return; weeklyCheckins[wk][tid]=next; if(delta>0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(next>=(t?t.target:1)) { let idx=weeklyTasks.findIndex(x=>x.id===tid); let el=document.querySelector('#weeklyCard .weekly-item:nth-child('+(idx+1)+')'); if(el) spawnParticles(el); } } else if(delta<0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints=Math.max(0,totalPoints-pts); } saveAll(); renderWeekly(); renderPointsBar(); updateAIBadge(); }
 
-// ============ RENDER PK ============
-function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let evts=PK_SCHEDULE[day]; let isCur=day===wd; let dci=isCur?tp:{}; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<evts.length;i++) { let e=evts[i]; let done=isCur&&dci[i]===1; h+='<div class="pk-event"><span class="pk-time">'+e.time+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'+(isCur?'<button class="pk-check-btn'+(done?' done':'')+'" onclick="togglePK('+i+')">'+(done?'✓':'')+'</button>':(dci[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':''))+'</div>'; } h+='</div>'; } c.innerHTML=h; }
-function togglePK(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的PK哦～'); return; } if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
+// ============ RENDER PK + Hobby merged by day ============
+function renderPK() {
+  let c=document.getElementById('pkCard'); if(!c) return;
+  let wd=WEEKDAY_NAMES[currentDate.getDay()];
+  let dk=dateKey(currentDate);
+  let tp=pkCheckins[dk]||{};
+  let hp=hobbyCheckins[dk]||{};
+  let h='';
+  let dayOrder=['周一','周二','周三','周四','周五','周六','周日'];
+  for(let day of dayOrder) {
+    let pkEvts=PK_SCHEDULE[day]||[];
+    let hobbyEvts=HOBBY_SCHEDULE[day]||[];
+    let allEvts=[...pkEvts.map(e=>({...e,type:'pk'})), ...hobbyEvts.map(e=>({...e,type:'hobby'}))];
+    allEvts.sort((a,b)=>a.time.localeCompare(b.time));
+    if(allEvts.length===0) continue;
+    let isCur=day===wd;
+    h+='<div class="pk-day'+(isCur?' today':'')+'">';
+    h+='<div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>';
+    for(let i=0;i<allEvts.length;i++) {
+      let e=allEvts[i];
+      let checkStore=e.type==='pk'?tp:hp;
+      let done=isCur&&checkStore[i]===1;
+      let timeLabel=e.time+(e.endTime?'-'+e.endTime:'');
+      let ptsLabel=e.type==='pk'?'+1000':' +500';
+      let specialTag=e.special?'<span style="font-size:0.68rem;color:#D4942A;margin-left:4px;background:rgba(212,148,42,0.12);padding:1px 6px;border-radius:8px;">'+(e.place||'')+'</span>':'';
+      h+='<div class="pk-event">';
+      h+='<span class="pk-time">'+timeLabel+'</span>';
+      h+='<span class="pk-icon">'+e.icon+'</span>';
+      h+='<span class="pk-subject">'+e.subject+specialTag+' <span style="font-size:0.7rem;color:#888;">'+ptsLabel+'</span></span>';
+      if(isCur) {
+        h+='<button class="pk-check-btn'+(done?' done':'')+'" onclick="toggleEvent(''+e.type+'','+i+')">'+(done?'✓':'')+'</button>';
+      } else {
+        h+=(checkStore[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':'');
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  c.innerHTML=h;
+}
+function toggleEvent(type,idx) {
+  let dk=dateKey(currentDate);
+  if(dk!==todayKey()) { showToast('只能打卡今天的内容哦～'); return; }
+  let store=type==='pk'?pkCheckins:hobbyCheckins;
+  if(!store[dk]) store[dk]={};
+  let cur=store[dk][idx]||0;
+  let pts=type==='pk'?1000:500;
+  let label=type==='pk'?'PK':'兴趣课';
+  if(cur===1) { store[dk][idx]=0; totalPoints=Math.max(0,totalPoints-pts); }
+  else { store[dk][idx]=1; totalPoints+=pts; showToast(label+' +'+pts+' 能量！🎉'); playPop(); }
+  saveAll(); renderPK(); renderPointsBar(); updateAIBadge();
+}
 
 // ============ RENDER POINTS BAR ============
 function renderPointsBar() { let tp=document.getElementById('todayPoints'); let totalp=document.getElementById('totalPoints'); let sd=document.getElementById('streakDays'); if(tp) tp.innerHTML='⚡ '+calcTodayPoints(); if(totalp) totalp.innerHTML='⚡ '+totalPoints; if(sd) sd.innerHTML='🔥 '+calcStreak()+'天'; }
@@ -1847,7 +1932,7 @@ function spawnLeaves(tabId) {
   }
 }
 function renderAll() { renderDate(); renderPointsBar(); renderDaily(); renderWeekly(); renderPK(); if(currentTab==='quanyi') { renderQuanyi(); } updateAIBadge(); }
-function switchTab(name) { currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.reset-btn-wrapper').forEach(w=>w.classList.remove('active')); let tm={daily:0,weekly:1,pk:2,quanyi:3}; let tabs=document.querySelectorAll('.tab'); if(tabs[tm[name]]) tabs[tm[name]].classList.add('active'); let el=document.getElementById('tab-'+name); if(el) el.classList.add('active'); let rw=document.getElementById('reset-wrapper-'+name); if(rw) rw.classList.add('active'); if(name==='quanyi') renderQuanyi(); spawnLeaves('tab-'+name); }
+function switchTab(name) { currentTab=name; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.reset-btn-wrapper').forEach(w=>w.classList.remove('active')); let tm={daily:0,weekly:1,pk:2,quanyi:3}; let tabs=document.querySelectorAll('.tab'); if(tabs[tm[name]]) tabs[tm[name]].classList.add('active'); let el=document.getElementById('tab-'+name); if(el) el.classList.add('active'); let rw=document.getElementById('reset-wrapper-'+name); if(rw) rw.classList.add('active'); if(name==='quanyi') renderQuanyi(); if(name==='pk') renderPK(); spawnLeaves('tab-'+name); }
 
 // ============ 权益卡子页切换 ============
 function switchQuanyiPage(page) {
