@@ -1670,6 +1670,7 @@ let weeklyTasks = [...DEFAULT_WEEKLY_TASKS];
 let dailyCheckins = {};
 let weeklyCheckins = {};
 let pkCheckins = {};
+let hobbyCheckins = {};
 let totalPoints = 0;
 let drawsAvailable = 0;
 let drawHistory = [];
@@ -1758,6 +1759,7 @@ function doSave() {
     dailyCheckins: dailyCheckins,
     weeklyCheckins: weeklyCheckins,
     pkCheckins: pkCheckins,
+    hobbyCheckins: hobbyCheckins,
     totalPoints: totalPoints,
     drawsAvailable: drawsAvailable,
     drawGridCards: drawGridCards.map(function(s) { return { cardId: s.card ? s.card.id : null, flipped: s.flipped, animating: s.animating }; }),
@@ -1810,6 +1812,7 @@ function doImport(file) {
       if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
       if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
       if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.hobbyCheckins) hobbyCheckins = data.hobbyCheckins;
       if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
       if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
       if (data.drawHistory) drawHistory = data.drawHistory;
@@ -1884,6 +1887,7 @@ function saveAll() {
   sSet('taotao_v5_checkins_d', JSON.stringify(dailyCheckins));
   sSet('taotao_v5_checkins_w', JSON.stringify(weeklyCheckins));
   sSet('taotao_v5_checkins_pk', JSON.stringify(pkCheckins));
+  sSet('taotao_v5_checkins_hobby', JSON.stringify(hobbyCheckins));
   sSet('taotao_v5_points', JSON.stringify(totalPoints));
   sSet('taotao_v5_draws', JSON.stringify(drawsAvailable));
   // 保存抽卡网格状态（只存cardId，不存整个对象）
@@ -1903,6 +1907,7 @@ function loadAll() {
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
+  try { hobbyCheckins=JSON.parse(sGet('taotao_v5_checkins_hobby'))||{}; } catch(e){}
   try { totalPoints=JSON.parse(sGet('taotao_v5_points'))||0; } catch(e){}
   try { drawsAvailable=JSON.parse(sGet('taotao_v5_draws'))||0; } catch(e){}
   // 加载抽卡网格状态
@@ -1992,8 +1997,9 @@ function deleteWeeklyTask(tid) { let t=weeklyTasks.find(x=>x.id===tid); if(!t||t
 function weeklyChange(tid,delta) { let wk=weekKey(currentDate); if(!weeklyCheckins[wk]) weeklyCheckins[wk]={}; let cur=weeklyCheckins[wk][tid]||0; let next=cur+delta; if(next<0) return; weeklyCheckins[wk][tid]=next; if(delta>0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints+=pts; showToast('+'+pts+' 能量！✨'); playPop(); if(next>=(t?t.target:1)) { let idx=weeklyTasks.findIndex(x=>x.id===tid); let el=document.querySelector('#weeklyCard .weekly-item:nth-child('+(idx+1)+')'); if(el) spawnParticles(el); } } else if(delta<0) { let t=weeklyTasks.find(x=>x.id===tid); let pts=t?(t.points||200):200; totalPoints=Math.max(0,totalPoints-pts); } saveAll(); renderWeekly(); renderPointsBar(); updateAIBadge(); }
 
 // ============ RENDER PK ============
-function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let evts=PK_SCHEDULE[day]; let isCur=day===wd; let dci=isCur?tp:{}; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<evts.length;i++) { let e=evts[i]; let done=isCur&&dci[i]===1; h+='<div class="pk-event"><span class="pk-time">'+e.time+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'+(isCur?'<button class="pk-check-btn'+(done?' done':'')+'" onclick="togglePK('+i+')">'+(done?'✓':'')+'</button>':(dci[i]===1?'<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>':''))+'</div>'; } h+='</div>'; } c.innerHTML=h; }
+function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let th=hobbyCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let pkEvts=PK_SCHEDULE[day]||[]; let hbEvts=HOBBY_SCHEDULE[day]||[]; let combined=[]; pkEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:true,idx:i,points:1000}); }); hbEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:false,idx:i,points:e.points||500,endTime:e.endTime||null}); }); combined.sort(function(a,b){ return a.time.localeCompare(b.time); }); let isCur=day===wd; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<combined.length;i++) { let e=combined[i]; let done=isCur?(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)):false; let timeStr=e.endTime?e.time+'~'+e.endTime:e.time; let onclick=e.isPK?'togglePK('+e.idx+')':'toggleHobby('+e.idx+')'; h+='<div class="pk-event"><span class="pk-time">'+timeStr+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'; if(isCur){ h+='<button class="pk-check-btn'+(done?' done':'')+'" onclick="'+onclick+'">'+(done?'✓':'')+'</button>'; } else { let wasDone=(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)); if(wasDone) h+='<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>'; } h+='</div>'; } h+='</div>'; } c.innerHTML=h; }
 function togglePK(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的PK哦～'); return; } if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
+function toggleHobby(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的兴趣课哦～'); return; } if(!hobbyCheckins[dk]) hobbyCheckins[dk]={}; let cur=hobbyCheckins[dk][idx]||0; if(cur===1) { hobbyCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-500); } else { hobbyCheckins[dk][idx]=1; totalPoints+=500; showToast('兴趣课 +500 能量！🎵'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
 
 // ============ RENDER POINTS BAR ============
 function renderPointsBar() { let tp=document.getElementById('todayPoints'); let totalp=document.getElementById('totalPoints'); let sd=document.getElementById('streakDays'); if(tp) tp.innerHTML='⚡ '+calcTodayPoints(); if(totalp) totalp.innerHTML='⚡ '+totalPoints; if(sd) sd.innerHTML='🔥 '+calcStreak()+'天'; }
@@ -2689,7 +2695,7 @@ function doResetAll() {
   // 清除所有 localStorage 数据
   const keys = [
     'taotao_v5_tasks_d', 'taotao_v5_tasks_w',
-    'taotao_v5_checkins_d', 'taotao_v5_checkins_w', 'taotao_v5_checkins_pk',
+    'taotao_v5_checkins_d', 'taotao_v5_checkins_w', 'taotao_v5_checkins_pk', 'taotao_v5_checkins_hobby',
     'taotao_v5_points', 'taotao_v5_draws', 'taotao_v5_draw_history',
     'taotao_v5_collection', 'taotao_v5_wishes', 'taotao_v5_wish_energy',
     'taotao_v5_claimed', 'taotao_v5_aiY', 'taotao_v5_data_ver'
@@ -2702,6 +2708,7 @@ function doResetAll() {
   dailyCheckins = {};
   weeklyCheckins = {};
   pkCheckins = {};
+  hobbyCheckins = {};
   totalPoints = 0;
   drawsAvailable = 0;
   drawHistory = [];
@@ -2726,6 +2733,7 @@ function exportData() {
     dailyCheckins: dailyCheckins,
     weeklyCheckins: weeklyCheckins,
     pkCheckins: pkCheckins,
+    hobbyCheckins: hobbyCheckins,
     totalPoints: totalPoints,
     drawsAvailable: drawsAvailable,
     drawHistory: drawHistory,
@@ -2757,6 +2765,7 @@ function importData(file) {
       if (data.dailyCheckins) dailyCheckins = data.dailyCheckins;
       if (data.weeklyCheckins) weeklyCheckins = data.weeklyCheckins;
       if (data.pkCheckins) pkCheckins = data.pkCheckins;
+      if (data.hobbyCheckins) hobbyCheckins = data.hobbyCheckins;
       if (data.totalPoints !== undefined) totalPoints = data.totalPoints;
       if (data.drawsAvailable !== undefined) drawsAvailable = data.drawsAvailable;
       if (data.drawHistory) drawHistory = data.drawHistory;
