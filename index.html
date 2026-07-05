@@ -1418,6 +1418,24 @@ body > * { position: relative; z-index: 1; }
 <script>
 'use strict';
 
+// ============ 错误捕获（页面顶部，尽早捕获） ============
+(function(){
+  let errDiv = null;
+  function showErr(msg) {
+    if (!errDiv) {
+      errDiv = document.createElement('div');
+      errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 18px;z-index:99999;font-size:14px;line-height:1.6;';
+      errDiv.innerHTML = '<b>⚠️ 页面错误</b><br>' + msg + '<br><button onclick="location.reload()" style="margin-top:6px;padding:4px 12px;background:#fff;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">刷新页面</button> <button onclick="localStorage.clear();location.reload()" style="margin-top:6px;padding:4px 12px;background:#fff;color:#c0392b;border:none;border-radius:6px;cursor:pointer;">清除缓存并刷新</button>';
+      document.body.appendChild(errDiv);
+    }
+  }
+  window.onerror = function(msg, src, line, col, err) {
+    showErr((msg||'') + '<br>位置：第' + (line||'?') + '行' + (col?'，第'+col+'列':'') + (err&&err.stack?'<br><small>'+err.stack.replace(/</g,'&lt;')+'</small>':''));
+    return true;
+  };
+  window.addEventListener('error', function(e) { showErr((e.message||'')+'<br>位置：'+(e.filename||'')+' 第'+(e.lineno||'?')+'行'); }, true);
+})();
+
 // ============ 工具函数 ============
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
@@ -2726,6 +2744,7 @@ function importData(file) {
 
 // ============ INIT ============
 function init() {
+  try {
   initStorage(); 
   // alert('存储类型：' + _storageType);  // 已删除弹出提示
   loadAll();
@@ -2755,6 +2774,15 @@ function init() {
   } catch(e){}
   renderAll();
   spawnLeaves('tab-daily');
+  } catch(initErr) {
+    let errMsg = '初始化失败：' + (initErr && initErr.message ? initErr.message : initErr);
+    if (document.body) {
+      let d = document.createElement('div');
+      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:16px 20px;z-index:99999;font-size:15px;line-height:1.8;';
+      d.innerHTML = '⚠️ ' + errMsg + '<br><button onclick="localStorage.clear();location.reload()" style="margin-top:8px;padding:6px 16px;background:#fff;color:#c0392b;border:none;border-radius:8px;cursor:pointer;font-size:14px;">清除缓存并刷新</button>';
+      document.body.appendChild(d);
+    }
+  }
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
