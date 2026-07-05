@@ -1735,8 +1735,8 @@ function saveAll() {
 }
 
 function loadAll() {
-  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&d.length) dailyTasks=d; } catch(e){}
-  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&w.length) weeklyTasks=w; } catch(e){}
+  try { let d=JSON.parse(sGet('taotao_v5_tasks_d')); if(d&&Array.isArray(d)&&d.length) dailyTasks=d; } catch(e){ dailyTasks=[...DEFAULT_DAILY_TASKS]; }
+  try { let w=JSON.parse(sGet('taotao_v5_tasks_w')); if(w&&Array.isArray(w)&&w.length) weeklyTasks=w; } catch(e){ weeklyTasks=[...DEFAULT_WEEKLY_TASKS]; }
   try { dailyCheckins=JSON.parse(sGet('taotao_v5_checkins_d'))||{}; } catch(e){}
   try { weeklyCheckins=JSON.parse(sGet('taotao_v5_checkins_w'))||{}; } catch(e){}
   try { pkCheckins=JSON.parse(sGet('taotao_v5_checkins_pk'))||{}; } catch(e){}
@@ -1760,14 +1760,17 @@ function loadAll() {
   try { wishEnergy=JSON.parse(sGet('taotao_v5_wish_energy'))||0; } catch(e){}
   try { claimHistory=JSON.parse(sGet('taotao_v5_claimed'))||{}; } catch(e){}
   try { aiFloatY=JSON.parse(sGet('taotao_v5_aiY')); } catch(e){}
-  migrateData();
+  try { migrateData(); } catch(e) { console.error('migrateData error:', e); }
 }
 
 function migrateData() {
-  const DATA_VERSION = 13;
+  const DATA_VERSION = 14;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
+  // Safety: ensure arrays
+  if (!Array.isArray(dailyTasks)) dailyTasks = [];
+  if (!Array.isArray(weeklyTasks)) weeklyTasks = [];
 
   let changed = false;
 
