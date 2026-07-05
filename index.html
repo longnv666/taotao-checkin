@@ -1460,8 +1460,10 @@ const DEFAULT_WEEKLY_TASKS = [
   { id: 'w7', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
   { id: 'w8', label: '小咖魔力写作（五、六年级）', emoji: '📝', target: 1, unit: '篇', points: 200, builtin: true },
   { id: 'w9', label: '小咖魔力精读（五、六年级）', emoji: '🔍', target: 1, unit: '篇', points: 200, builtin: true },
-  { id: 'w10', label: '世界历史PK前思辨性思考', emoji: '🌍', target: 2, unit: '次', points: 200, builtin: true },
-  { id: 'w11', label: '世界历史PK前跨学科思考', emoji: '🧩', target: 2, unit: '次', points: 200, builtin: true },
+  { id: 'w10', label: '世界历史PK前思辨性思考（周五晚PK）', emoji: '🌍', target: 1, unit: '次', points: 200, builtin: true },
+  { id: 'w11', label: '世界历史PK前跨学科思考（周一晚PK）', emoji: '🧩', target: 1, unit: '次', points: 200, builtin: true },
+  { id: 'w13', label: '世界历史PK前跨学科思考（周三晚PK）', emoji: '🧩', target: 1, unit: '次', points: 200, builtin: true },
+  { id: 'w14', label: '世界历史PK前思辨性思考（周日晚PK）', emoji: '🌍', target: 1, unit: '次', points: 200, builtin: true },
   { id: 'w12', label: 'AI应用出产品', emoji: '🤖', target: 1, unit: '个', points: 200, builtin: true }
 ];
 const PK_SCHEDULE = {
@@ -1781,13 +1783,13 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 14;
+  const DATA_VERSION = 15;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
 
-  // 内置每日任务 points 强制设为 10
-  // 内置周任务 points 强制设为 50
+  // 内置每日任务 points 强制设为 100
+  // 内置周任务 points 强制设为 200
   let changed = false;
   const DAILY_BUILTIN_IDS = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
   const WEEKLY_BUILTIN_IDS = ['w1','w2','w3','w4','w5','w6','w7'];
@@ -1797,6 +1799,14 @@ function migrateData() {
   for (let t of weeklyTasks) {
     if (WEEKLY_BUILTIN_IDS.includes(t.id) && t.points !== 200) { t.points = 200; changed = true; }
   }
+  // v15: 强制更新世界历史PK相关周任务的label和target
+  for (let t of weeklyTasks) {
+    if (t.id === 'w10') { t.label = '世界历史PK前思辨性思考（周五晚PK）'; t.target = 1; changed = true; }
+    if (t.id === 'w11') { t.label = '世界历史PK前跨学科思考（周一晚PK）'; t.target = 1; changed = true; }
+  }
+  // 新增 w13, w14
+  if (!weeklyTasks.find(t => t.id === 'w13')) { weeklyTasks.push({ id: 'w13', label: '世界历史PK前跨学科思考（周三晚PK）', emoji: '🧩', target: 1, unit: '次', points: 200, builtin: true }); changed = true; }
+  if (!weeklyTasks.find(t => t.id === 'w14')) { weeklyTasks.push({ id: 'w14', label: '世界历史PK前思辨性思考（周日晚PK）', emoji: '🌍', target: 1, unit: '次', points: 200, builtin: true }); changed = true; }
   if (changed) {
     sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
     sSet('taotao_v5_tasks_w', JSON.stringify(weeklyTasks));
