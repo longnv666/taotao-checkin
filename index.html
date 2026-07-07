@@ -1464,6 +1464,7 @@ const DEFAULT_WEEKLY_TASKS = [
   { id: 'w14', label: '世界历史PK前思辨性思考（周日晚PK）', emoji: '🌍', target: 1, unit: '次', points: 200, builtin: true },
   { id: 'w5', label: '语文课本预习（精读课文，回答预习题目）', emoji: '📖', target: 1, unit: '课', points: 200, builtin: true },
   { id: 'w6', label: 'RAZ（或神奇树屋）', emoji: '📚', target: 5, unit: '篇', points: 200, builtin: true },
+  { id: 'w15', label: 'Tiddy新闻', emoji: '📰', target: 1, unit: '篇', points: 200, builtin: true },
   { id: 'w7', label: '小咖魔力文言文（高阶）', emoji: '🏛️', target: 1, unit: '篇', points: 200, builtin: true },
   { id: 'w8', label: '小咖魔力写作（五、六年级）', emoji: '📝', target: 1, unit: '篇', points: 200, builtin: true },
   { id: 'w9', label: '小咖魔力精读（五、六年级）', emoji: '🔍', target: 1, unit: '篇', points: 200, builtin: true },
@@ -1786,7 +1787,7 @@ function loadAll() {
 }
 
 function migrateData() {
-  const DATA_VERSION = 17;
+  const DATA_VERSION = 18;
   let ver = 0;
   try { ver = JSON.parse(sGet('taotao_v5_data_ver')) || 0; } catch(e) {}
   if (ver >= DATA_VERSION) return;
@@ -1878,8 +1879,8 @@ function handleWeeklyDrop(e) { e.preventDefault(); e.stopPropagation(); this.cla
 
 // ============ RENDER PK ============
 function renderPK() { let c=document.getElementById('pkCard'); if(!c) return; let wd=WEEKDAY_NAMES[currentDate.getDay()]; let dk=dateKey(currentDate); let tp=pkCheckins[dk]||{}; let th=hobbyCheckins[dk]||{}; let h=''; for(let day in PK_SCHEDULE) { let pkEvts=PK_SCHEDULE[day]||[]; let hbEvts=HOBBY_SCHEDULE[day]||[]; let combined=[]; pkEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:true,idx:i,points:1000}); }); hbEvts.forEach(function(e,i){ combined.push({time:e.time,icon:e.icon,subject:e.subject,isPK:false,idx:i,points:e.points||500,endTime:e.endTime||null}); }); combined.sort(function(a,b){ return a.time.localeCompare(b.time); }); let isCur=day===wd; h+='<div class="pk-day'+(isCur?' today':'')+'"><div class="pk-day-header">'+day+(isCur?' <span class="today-badge">今天</span>':'')+'</div>'; for(let i=0;i<combined.length;i++) { let e=combined[i]; let done=isCur?(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)):false; let timeStr=e.endTime?e.time+'~'+e.endTime:e.time; let onclick=e.isPK?'togglePK('+e.idx+')':'toggleHobby('+e.idx+')'; h+='<div class="pk-event"><span class="pk-time">'+timeStr+'</span><span class="pk-icon">'+e.icon+'</span><span class="pk-subject">'+e.subject+'</span>'; if(isCur){ h+='<button class="pk-check-btn'+(done?' done':'')+'" onclick="'+onclick+'">'+(done?'✓':'')+'</button>'; } else { let wasDone=(e.isPK?(tp[e.idx]===1):(th[e.idx]===1)); if(wasDone) h+='<span style="color:var(--green-mid);font-size:0.8rem;">✓</span>'; } h+='</div>'; } h+='</div>'; } c.innerHTML=h; }
-function togglePK(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的PK哦～'); return; } if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
-function toggleHobby(idx) { let dk=dateKey(currentDate); if(dk!==todayKey()) { showToast('只能打卡今天的兴趣课哦～'); return; } if(!hobbyCheckins[dk]) hobbyCheckins[dk]={}; let cur=hobbyCheckins[dk][idx]||0; if(cur===1) { hobbyCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-500); } else { hobbyCheckins[dk][idx]=1; totalPoints+=500; showToast('兴趣课 +500 能量！🎵'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
+function togglePK(idx) { let dk=dateKey(currentDate); if(!pkCheckins[dk]) pkCheckins[dk]={}; let cur=pkCheckins[dk][idx]||0; if(cur===1) { pkCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-1000); } else { pkCheckins[dk][idx]=1; totalPoints+=1000; showToast('PK +1000 能量！⚔️'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
+function toggleHobby(idx) { let dk=dateKey(currentDate); if(!hobbyCheckins[dk]) hobbyCheckins[dk]={}; let cur=hobbyCheckins[dk][idx]||0; if(cur===1) { hobbyCheckins[dk][idx]=0; totalPoints=Math.max(0,totalPoints-500); } else { hobbyCheckins[dk][idx]=1; totalPoints+=500; showToast('兴趣课 +500 能量！🎵'); playPop(); } saveAll(); renderPK(); renderPointsBar(); updateAIBadge(); }
 
 // ============ RENDER POINTS BAR ============
 function renderPointsBar() { let tp=document.getElementById('todayPoints'); let totalp=document.getElementById('totalPoints'); let sd=document.getElementById('streakDays'); if(tp) tp.innerHTML='⚡ '+calcTodayPoints(); if(totalp) totalp.innerHTML='⚡ '+totalPoints; if(sd) sd.innerHTML='🔥 '+calcStreak()+'天'; }
