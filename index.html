@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>🌿 韬韬学习打卡表 · 龙虾助手版</title>
 <style>
 :root {
@@ -1821,6 +1824,16 @@ function migrateData() {
   // v17: 强制按 DEFAULT_WEEKLY_TASKS 顺序重排周任务（保留打卡数据）
   const customWeekly = weeklyTasks.filter(t => !DEFAULT_WEEKLY_TASKS.find(d => d.id === t.id));
   weeklyTasks = DEFAULT_WEEKLY_TASKS.map(d => weeklyTasks.find(t => t.id === d.id) || d).concat(customWeekly);
+  changed = true;
+  // v18: 强制同步所有内置任务的 label/emoji/target/unit/points（修复手机旧缓存残留的乱码任务名）
+  for (let d of DEFAULT_DAILY_TASKS) {
+    let t = dailyTasks.find(x => x.id === d.id);
+    if (t) { t.label = d.label; t.emoji = d.emoji; t.points = d.points; }
+  }
+  for (let d of DEFAULT_WEEKLY_TASKS) {
+    let t = weeklyTasks.find(x => x.id === d.id);
+    if (t) { t.label = d.label; t.emoji = d.emoji; t.target = d.target; t.unit = d.unit; t.points = d.points; }
+  }
   changed = true;
   if (changed) {
     sSet('taotao_v5_tasks_d', JSON.stringify(dailyTasks));
