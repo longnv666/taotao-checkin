@@ -1724,12 +1724,8 @@ const _nameStorage = {
 };
 
 function initStorage() {
-  // 1. 尝试 localStorage
+  // 只使用 localStorage（sessionStorage 关闭即丢失，不适合持久保存）
   try { localStorage.setItem('__t__','1'); localStorage.removeItem('__t__'); storage=localStorage; _storageType='local'; return; } catch(e){}
-  // 2. 尝试 sessionStorage
-  try { sessionStorage.setItem('__t__','1'); sessionStorage.removeItem('__t__'); storage=sessionStorage; _storageType='session'; return; } catch(e){}
-  // 3. 降级到 window.name
-  try { _loadNameData(); storage = _nameStorage; _storageType = 'name'; return; } catch(e){}
   storage = null; _storageType = 'none';
 }
 
@@ -1758,6 +1754,21 @@ function sSet(k, v) {
   sSet('taotao_v5_wish_energy', JSON.stringify(wishEnergy));
   sSet('taotao_v5_claimed', JSON.stringify(claimHistory));
   sSet('taotao_v5_aiY', JSON.stringify(aiFloatY));
+  showSaveIndicator();
+}
+
+function showSaveIndicator() {
+  let el = document.getElementById('saveIndicator');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'saveIndicator';
+    el.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(45,90,39,0.92);color:#fff;padding:5px 16px;border-radius:16px;font-size:0.78rem;z-index:99998;transition:opacity 0.4s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+    document.body.appendChild(el);
+  }
+  el.textContent = '✓ 已保存';
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.opacity = '0'; }, 1400);
 }
 
 function loadAll() {
@@ -2681,6 +2692,9 @@ function importData(file) {
 // ============ INIT ============
 function init() {
   initStorage(); 
+  if (_storageType !== 'local') {
+    setTimeout(function(){ showToast('⚠️ 浏览器不支持本地存储，打卡记录关闭后可能丢失，请更换浏览器'); }, 500);
+  }
   // alert('存储类型：' + _storageType);  // 已删除弹出提示
   loadAll();
   window.addEventListener('beforeunload', () => { try { saveAll(); } catch(e){} });
